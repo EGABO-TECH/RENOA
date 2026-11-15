@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RENOA
 
-## Getting Started
+Website for **RENOA Collective** — a software studio in Kampala, Uganda, run by
+six co-founders.
 
-First, run the development server:
+Built with Next.js 16 (App Router) and TypeScript, with Payload CMS 3 embedded so
+the whole site is editable from an admin dashboard without touching code.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+| Layer | Choice |
+| --- | --- |
+| App | Next.js 16 App Router, React 19, TypeScript (strict) |
+| Styling | Tailwind CSS 4, design tokens as CSS variables |
+| CMS | Payload CMS 3, mounted inside the Next app at `/admin` |
+| Database | PostgreSQL (Neon) |
+| Media | Vercel Blob, served through `next/image` |
+| Rich text | Lexical |
+| Hosting | Vercel |
+
+## Layout
+
+```
+src/
+  app/
+    (site)/        public pages
+    (payload)/     admin dashboard + Payload REST and GraphQL routes
+  collections/     one file per Payload collection
+  globals/         SiteSettings, Navigation, Homepage
+  blocks/          layout blocks for Pages and the Homepage builder
+  components/      shared UI
+  lib/             access control, shared field groups
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Public routes live in the `(site)` route group; Payload owns `(payload)` and
+carries its own root layout, so admin styling never reaches the public site.
+`robots.ts`, `sitemap.ts` and the app icons stay at the `src/app` root.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Requirements
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Node `^22.23.4` or `>=24.22.1`** — required by Payload 3.93. Older Node 24
+  builds (24.18 and below) crash on startup.
+- PostgreSQL connection string.
 
-## Learn More
+## Getting started
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+cp .env.example .env     # then fill DATABASE_URL and PAYLOAD_SECRET
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Generate a `PAYLOAD_SECRET` with:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-## Deploy on Vercel
+The public site runs at `http://localhost:3000` and the admin at
+`http://localhost:3000/admin`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint |
+
+## Roles
+
+Three roles, enforced by Payload access functions on every collection and global
+so the REST and GraphQL APIs are covered, not just the admin UI:
+
+- **Admin** — everything, including users, roles, site settings and deletes.
+- **Editor** — create, edit and publish content; read and update the inquiry and
+  application pipelines.
+- **Member** — edit their own team profile and their own unpublished posts, and
+  submit them for review. Members cannot publish and have no pipeline access.
+
+## Notes
+
+`src/app/(payload)/admin/importMap.js` is maintained by hand. The
+`payload generate:importmap` and `generate:types` CLI commands currently crash in
+this project: the CLI loads `payload.config.ts` through `tsx`, whose require hook
+instantiates undici's `lib/core/symbols` twice, so the symbol identity check in
+undici's `CacheStorage` constructor fails. Next bundles the config itself and is
+unaffected. Keep the map's keys in sync with the component paths in
+`payload.config.ts`.
