@@ -26,6 +26,29 @@ export const Users: CollectionConfig = {
     },
     unlock: isAdmin,
   },
+  hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        if (operation !== "create") return data;
+
+        // Payload lets the very first account be created with no authenticated
+        // user. `role` is an admin-only field, so that signup would otherwise
+        // fall back to "member" and lock everyone out of their own site.
+        // Force the first account to admin; later accounts keep whatever an
+        // admin chose, which field access already restricts.
+        const { totalDocs } = await req.payload.count({
+          collection: "users",
+          overrideAccess: true,
+        });
+
+        if (totalDocs === 0) {
+          return { ...data, role: "admin" };
+        }
+
+        return data;
+      },
+    ],
+  },
   fields: [
     { name: "name", type: "text", required: true },
     {

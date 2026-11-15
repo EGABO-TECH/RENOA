@@ -1,3 +1,5 @@
+import path from "path";
+
 import type { CollectionConfig } from "payload";
 import { anyone, deleteOnlyAdmin, isEditor, isLoggedIn } from "@/lib/access";
 
@@ -11,6 +13,10 @@ export const Media: CollectionConfig = {
     delete: deleteOnlyAdmin,
   },
   upload: {
+    // Local-dev fallback when BLOB_READ_WRITE_TOKEN is unset. Kept out of
+    // src/ (Payload's default is the collection slug beside the config) and
+    // gitignored; production serves from Vercel Blob instead.
+    staticDir: path.resolve(process.cwd(), "media"),
     // Width-based sizes; height omitted so aspect ratio is preserved.
     imageSizes: [
       { name: "thumbnail", width: 400, withoutEnlargement: true },
