@@ -36,6 +36,13 @@ export const Projects: CollectionConfig = {
       type: "select",
       required: true,
       defaultValue: "in-progress",
+      // Drafts are enabled on this collection, so Payload also creates its own
+      // `_status` column. Its Postgres enum would be named
+      // `enum_projects_status`, which is exactly what this field would generate
+      // too — the collision makes the schema push fail with
+      // `invalid input value for enum enum_projects_status: "in-progress"`.
+      // Naming this enum explicitly keeps the field name the brief specifies.
+      enumName: "enum_projects_lifecycle",
       options: [
         { label: "Live", value: "live" },
         { label: "Testnet", value: "testnet" },

@@ -81,10 +81,17 @@ so the REST and GraphQL APIs are covered, not just the admin UI:
 
 ## Notes
 
-`src/app/(payload)/admin/importMap.js` is maintained by hand. The
-`payload generate:importmap` and `generate:types` CLI commands currently crash in
-this project: the CLI loads `payload.config.ts` through `tsx`, whose require hook
-instantiates undici's `lib/core/symbols` twice, so the symbol identity check in
-undici's `CacheStorage` constructor fails. Next bundles the config itself and is
-unaffected. Keep the map's keys in sync with the component paths in
-`payload.config.ts`.
+`src/app/(payload)/admin/importMap.js` is **generated** — Payload rewrites it on
+`npm run dev` boot. Do not hand-edit it; add or rename a component in
+`payload.config.ts`, start the dev server, and commit the regenerated file.
+
+The `payload` CLI itself (`generate:importmap`, `generate:types`, `migrate:*`)
+currently crashes in this project. It loads `payload.config.ts` through `tsx`,
+whose require hook instantiates undici's `lib/core/symbols` twice, so the symbol
+identity check in undici's `CacheStorage` constructor throws "Illegal
+constructor". Deduping undici to a single copy does not fix it, and Node's
+`--no-experimental-require-module` only trades it for an ESM resolution failure
+in `file-type`. Next bundles the config itself and is unaffected, so the app,
+the admin and the import map are all fine — but `payload-types.ts` is not
+generated yet, and database migrations will need another route before a
+production deploy (dev uses schema push).
