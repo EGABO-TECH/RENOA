@@ -28,7 +28,7 @@ export default function FAQPage() {
             Everything you need to know.
           </h1>
           <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed">
-            Honest answers to the questions our clients ask most. If yours isn't here, email{" "}
+            Honest answers to the questions our clients ask most. If yours isn’t here, email{" "}
             <a href="mailto:hello@renoa.tech" className="text-[var(--accent)] hover:underline">
               hello@renoa.tech
             </a>{" "}

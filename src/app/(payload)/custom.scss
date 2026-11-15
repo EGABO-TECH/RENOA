@@ -1,0 +1,36 @@
+/* RENOA admin branding (brief section 7).
+   Payload exposes its theme as CSS custom properties; overriding the base
+   colour is enough to brand the whole admin without forking components. */
+:root {
+  --theme-success-500: #0f9d58;
+  --color-base-800: #111111;
+}
+
+html[data-theme="light"],
+html[data-theme="dark"] {
+  --theme-elevation-1000: #111111;
+}
+
+/* Accent: RENOA blue. */
+html {
+  --color-success-500: #2563eb;
+  --theme-brand: #2563eb;
+}
+
+.btn--style-primary {
+  --color: #ffffff;
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn--style-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.nav .nav__link:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

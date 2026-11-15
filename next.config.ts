@@ -1,41 +1,35 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
-  // Enable React strict mode for better error detection
   reactStrictMode: true,
 
-  // Image optimization — add remote domains here if you serve images from a CDN
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [],
   },
 
-  // Security & performance headers served by Vercel Edge
   async headers() {
     return [
       {
-        source: "/(.*)",
+        // Security headers for the public site only. The admin is excluded:
+        // Payload's UI needs blob: workers and inline styles that this CSP
+        // would block, and it is behind auth in any case.
+        source: "/((?!admin|api).*)",
         headers: [
-          // Prevent clickjacking
           { key: "X-Frame-Options", value: "DENY" },
-          // Prevent MIME sniffing
           { key: "X-Content-Type-Options", value: "nosniff" },
-          // Referrer policy
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // Permissions policy
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
-          // Content Security Policy — allows Google Fonts and self
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval/inline needed for Next.js dev; tighten in production if needed
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob:",
+              // blob: for Vercel Blob media; https: for the storage CDN.
+              "img-src 'self' data: blob: https:",
               "connect-src 'self'",
               "frame-ancestors 'none'",
             ].join("; "),
@@ -45,10 +39,9 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Redirects — add canonical redirects if needed
   async redirects() {
     return [];
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

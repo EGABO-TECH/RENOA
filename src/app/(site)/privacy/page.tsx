@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-[#111] mb-3">1. Who We Are</h2>
             <p className="leading-relaxed">
-              RENOA Collective Ltd ("RENOA", "we", "our", or "us") is a software studio registered in the Republic of Uganda,
+              RENOA Collective Ltd (“RENOA”, “we”, “our”, or “us”) is a software studio registered in the Republic of Uganda,
               headquartered in Kampala. Our contact email is{" "}
               <a href="mailto:hello@renoa.tech" className="text-[var(--accent)] hover:underline">
                 hello@renoa.tech
@@ -149,7 +149,7 @@ export default function PrivacyPage() {
               <a href="mailto:hello@renoa.tech" className="text-[var(--accent)] hover:underline">
                 hello@renoa.tech
               </a>{" "}
-              with the subject line "Privacy Request". We will respond within 14 business days.
+              with the subject line “Privacy Request”. We will respond within 14 business days.
             </p>
           </section>
 
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-[#111] mb-3">10. Changes to This Policy</h2>
             <p className="leading-relaxed">
-              We may update this Privacy Policy periodically. The "Last updated" date at the top indicates the most recent revision.
+              We may update this Privacy Policy periodically. The “Last updated” date at the top indicates the most recent revision.
               Continued use of our website following changes constitutes acceptance of the revised policy.
             </p>
           </section>

@@ -116,8 +116,8 @@ export default function AboutPage() {
                 reliable mobile money payment rails, and AI systems trained to understand local legal, educational, and commercial contexts.
               </p>
               <p className="mt-4 text-base text-[var(--text-secondary)] leading-relaxed">
-                We founded RENOA because too many promising East African ventures were paying offshore rates for software that didn't
-                understand their markets, failed on MTN network timeouts, and couldn't cite Ugandan law without hallucinating.
+                We founded RENOA because too many promising East African ventures were paying offshore rates for software that didn’t
+                understand their markets, failed on MTN network timeouts, and couldn’t cite Ugandan law without hallucinating.
               </p>
               <p className="mt-4 text-base text-[var(--text-secondary)] leading-relaxed">
                 We are the studio we wished existed when we were building our first products.

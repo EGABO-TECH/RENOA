@@ -59,7 +59,7 @@ export default function WorkPage() {
 
           {/* Projects Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            {filtered.map((project, idx) => (
+            {filtered.map((project) => (
               <div
                 key={project.slug}
                 className="group rounded-2xl border border-[#0000000d] bg-white p-7 shadow-xs flex flex-col justify-between hover:border-[var(--accent)] hover:shadow-lg transition-all duration-300"

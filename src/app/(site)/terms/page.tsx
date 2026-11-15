@@ -18,7 +18,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-[#111] mb-3">1. Agreement to Terms</h2>
             <p className="leading-relaxed">
-              By accessing renoa.tech or engaging RENOA Collective Ltd ("RENOA") for services, you agree to be bound by these
+              By accessing renoa.tech or engaging RENOA Collective Ltd (“RENOA”) for services, you agree to be bound by these
               Terms of Service and all applicable Ugandan laws and regulations. If you do not agree, please do not use our
               website or services.
             </p>
@@ -90,15 +90,15 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-[#111] mb-3">7. Warranties & Support</h2>
             <p className="leading-relaxed">
               All production builds include a 30-day post-launch warranty covering defects in the delivered software that arise
-              from RENOA's implementation. The warranty does not cover: third-party API changes, client-initiated modifications
-              after delivery, infrastructure outages outside RENOA's control, or feature requests beyond the original scope.
+              from RENOA’s implementation. The warranty does not cover: third-party API changes, client-initiated modifications
+              after delivery, infrastructure outages outside RENOA’s control, or feature requests beyond the original scope.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#111] mb-3">8. Limitation of Liability</h2>
             <p className="leading-relaxed">
-              To the maximum extent permitted by Ugandan law, RENOA's total liability for any claims arising from a project
+              To the maximum extent permitted by Ugandan law, RENOA’s total liability for any claims arising from a project
               shall not exceed the total contracted engagement value for that specific project. RENOA is not liable for indirect,
               consequential, or incidental damages including lost profits.
             </p>
@@ -109,7 +109,7 @@ export default function TermsPage() {
             <p className="leading-relaxed">
               Either party may terminate an engagement with 14 days written notice. Upon termination, the client is liable for
               work completed and accepted up to the termination date. RENOA will deliver all completed work products; work
-              in progress may be delivered at RENOA's discretion based on milestone completion.
+              in progress may be delivered at RENOA’s discretion based on milestone completion.
             </p>
           </section>
 
