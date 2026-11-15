@@ -3,6 +3,7 @@
 import { use } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import BookingModal from "@/components/BookingModal";
@@ -73,6 +74,23 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
                   Visit live application
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 </a>
+              </div>
+            )}
+
+            {/* Showcase banner */}
+            {project.image && (
+              <div className="pt-8">
+                <div className="overflow-hidden rounded-2xl border border-[#00000010] bg-[#0c121e] shadow-lg">
+                  <Image
+                    src={project.image}
+                    alt={`${project.title} live interface preview`}
+                    width={1376}
+                    height={768}
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 1000px"
+                    className="h-auto w-full object-cover"
+                  />
+                </div>
               </div>
             )}
           </div>

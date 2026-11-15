@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ALL_PROJECTS, Project } from "@/data/projects";
 
 function FeaturedProjectCard({ project, index }: { project: Project; index: number }) {
@@ -56,6 +57,22 @@ function FeaturedProjectCard({ project, index }: { project: Project; index: numb
             <span className="font-mono text-xs text-[var(--text-muted)]">{project.year}</span>
           </div>
         </div>
+
+        {/* Project thumbnail */}
+        {project.image && (
+          <Link
+            href={`/work/${project.slug}`}
+            className="relative mb-4 block aspect-[16/9] overflow-hidden rounded-xl border border-[#0000000d] bg-[#f8f9fa]"
+          >
+            <Image
+              src={project.image}
+              alt={`${project.title} interface preview`}
+              fill
+              sizes="(max-width: 768px) 100vw, 560px"
+              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            />
+          </Link>
+        )}
 
         {/* Title */}
         <h3 className="mb-2 text-[22px] font-semibold tracking-[-0.03em] text-[#111] transition-colors group-hover:text-[var(--accent)]">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import BookingModal from "@/components/BookingModal";
@@ -83,6 +84,22 @@ export default function WorkPage() {
                       <span className="text-xs font-mono text-[#9ca3af]">{project.year}</span>
                     </div>
                   </div>
+
+                  {/* Project thumbnail */}
+                  {project.image && (
+                    <Link
+                      href={`/work/${project.slug}`}
+                      className="relative mb-4 block aspect-[16/9] overflow-hidden rounded-xl border border-[#0000000d] bg-[#f8f9fa]"
+                    >
+                      <Image
+                        src={project.image}
+                        alt={`${project.title} interface preview`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 560px"
+                        className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </Link>
+                  )}
 
                   {/* Title */}
                   <h3 className="text-2xl font-bold text-[#111] mb-2 group-hover:text-[var(--accent)] transition-colors">

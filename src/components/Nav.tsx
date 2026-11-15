@@ -12,6 +12,7 @@ interface NavProps {
 const NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Work", href: "/work" },
+  { label: "Insights", href: "/insights" },
   { label: "About", href: "/about" },
   { label: "Models", href: "/pricing" },
   { label: "Careers", href: "/careers" },

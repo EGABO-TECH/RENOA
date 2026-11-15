@@ -4,6 +4,7 @@ import { useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import BookingModal from "@/components/BookingModal";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { Mail, MapPin, Clock, ArrowUpRight, Zap, Globe2, ShieldCheck } from "lucide-react";
 
 const ROLES = [
@@ -54,7 +55,7 @@ export default function CareersPage() {
               <p className="text-lg text-[#525252] leading-relaxed max-w-md">
                 We do not always publish open roles. We are always looking for exceptional talent with proof of work, strong taste, and the ability to turn ideas into shipped products.
               </p>
-              <a href="mailto:hello@renoa.dev" className="btn btn-fill self-start">
+              <a href="mailto:hello@renoa.tech" className="btn btn-fill self-start">
                 <Mail className="w-4 h-4" /> Contact Talent Team
               </a>
             </div>
@@ -231,6 +232,7 @@ export default function CareersPage() {
       )}
 
       <Footer />
+      <WhatsAppButton />
       <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </div>
   );

@@ -17,6 +17,7 @@ export interface Project {
   challenge: string;
   approach: string;
   solution: string;
+  image?: string;
   results: { label: string; value: string }[];
   quote?: {
     text: string;
@@ -36,6 +37,7 @@ export const ALL_PROJECTS: Project[] = [
     badge: "MOBILITY PLATFORM",
     status: "Live",
     liveUrl: "https://driveug.vercel.app",
+    image: "/projects/driveug.jpg",
     accentColor: "#2563EB",
     metrics: "MTN / Airtel MoMo Escrow",
     client: "DriveUG Mobility Ltd",
@@ -67,6 +69,7 @@ export const ALL_PROJECTS: Project[] = [
     badge: "CONSTITUTIONAL AI",
     status: "Live",
     liveUrl: "https://uglawbuddy.vercel.app",
+    image: "/projects/lawbuddy.jpg",
     accentColor: "#05668D",
     metrics: "1995 Constitution RAG Engine",
     client: "Civic & Legal Innovation Initiative",
@@ -98,6 +101,7 @@ export const ALL_PROJECTS: Project[] = [
     badge: "3D LEARNING ENGINE",
     status: "Live",
     liveUrl: "https://gemyte.vercel.app",
+    image: "/projects/gemyte.jpg",
     accentColor: "#028090",
     metrics: "Gemini 2.5 STEM Engine",
     client: "Gemyte Learning Lab",

@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     siteName: "RENOA",
     images: [
       {
-        url: "/icon.png",
-        width: 512,
-        height: 512,
-        alt: "RENOA Software Studio",
+        url: "/og-image.jpg",
+        width: 1376,
+        height: 768,
+        alt: "RENOA Software Studio — Kampala, Uganda",
       },
     ],
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "RENOA | Software Studio — Kampala, Uganda",
     description: "Product design, engineering, and AI from Kampala for East Africa and global markets.",
     site: "@renoa_tech",
-    images: ["/icon.png"],
+    images: ["/og-image.jpg"],
   },
   icons: {
     icon: [
