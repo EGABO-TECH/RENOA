@@ -1,287 +1,217 @@
-"use client";
-
-import { use } from "react";
-import { notFound } from "next/navigation";
-import Link from "next/link";
+import type { Metadata } from "next";
 import Image from "next/image";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import { ALL_PROJECTS } from "@/data/projects";
-import { useState } from "react";
+import { notFound } from "next/navigation";
 
-export default function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  const [bookingOpen, setBookingOpen] = useState(false);
+import { RichText, hasRichText } from "@/components/RichText";
+import { ResultList, TestimonialCard } from "@/components/site/Bits";
+import { MemberCard } from "@/components/site/MemberCard";
+import { PostCard } from "@/components/site/PostCard";
+import { Badge, Button, Grid, Section, SectionHeader, Stack } from "@/components/ui";
+import {
+  getPostsByProject,
+  getProject,
+  getSiteSettings,
+  getSlugs,
+  getTestimonials,
+} from "@/lib/cms";
+import { imageFrom, populatedList } from "@/lib/media";
+import {
+  PROJECT_CATEGORY,
+  PROJECT_STATUS,
+  buildMetadata,
+  formatDate,
+  isoDate,
+  routes,
+} from "@/lib/site";
+import type { TeamMember } from "@/payload-types";
 
-  const projectIndex = ALL_PROJECTS.findIndex((p) => p.slug === slug);
-  if (projectIndex === -1) {
-    notFound();
-  }
+type Params = { params: Promise<{ slug: string }> };
 
-  const project = ALL_PROJECTS[projectIndex];
-  const nextProject = ALL_PROJECTS[(projectIndex + 1) % ALL_PROJECTS.length];
+export async function generateStaticParams() {
+  return (await getSlugs("projects")).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params;
+  const [project, settings] = await Promise.all([getProject(slug), getSiteSettings()]);
+  if (!project) return {};
+
+  return buildMetadata({
+    settings,
+    path: routes.project(project.slug),
+    title: project.title,
+    description: project.summary,
+    seo: project.seo,
+    image: project.gallery?.[0]?.image,
+  });
+}
+
+/**
+ * A case study: challenge, solution, stack, results, who built it, gallery,
+ * updates, and the live and repo links (brief section 4).
+ *
+ * "Built by" is the contributors relationship, which is the same data that
+ * puts this project on each of their profiles — the point of the brief's rule
+ * that relationships are queried rather than duplicated. The tech stack is in
+ * mono because a stack really is machine data; the results are mono for the
+ * same reason, and are only ever the numbers the team entered.
+ */
+export default async function ProjectPage({ params }: Params) {
+  const { slug } = await params;
+  const project = await getProject(slug);
+  if (!project) notFound();
+
+  const [posts, testimonials] = await Promise.all([
+    getPostsByProject(project.id),
+    getTestimonials(project.id),
+  ]);
+
+  const contributors = populatedList<TeamMember>(project.contributors);
+  const gallery = (project.gallery ?? [])
+    .map((item) => imageFrom(item.image, "feature"))
+    .filter((image): image is NonNullable<typeof image> => image !== null);
+
+  const launched = formatDate(project.launchDate);
+  const stack = project.techStack ?? [];
 
   return (
-    <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
-      <Nav onOpenBooking={() => setBookingOpen(true)} />
+    <>
+      <Section size="lg">
+        <Stack gap={5}>
+          <Stack row gap={2} align="center">
+            <Badge
+              tone={project.status === "live" ? "ok" : "neutral"}
+              dot={project.status === "live" || project.status === "testnet"}
+            >
+              {PROJECT_STATUS[project.status] ?? project.status}
+            </Badge>
+            <Badge>{PROJECT_CATEGORY[project.category] ?? project.category}</Badge>
+            {launched ? (
+              <span className="t-small text-faint">
+                Launched <time dateTime={isoDate(project.launchDate)}>{launched}</time>
+              </span>
+            ) : null}
+          </Stack>
 
-      <main id="main" className="pt-32 pb-24">
-        {/* Hero Section */}
-        <div className="border-b border-[#0000000d] bg-white pb-16 pt-6">
-          <div className="wrapper max-w-[1160px] space-y-6">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-xs font-mono text-[#9ca3af]">
-              <Link href="/work" className="hover:text-[#111] transition-colors">WORK</Link>
-              <span>/</span>
-              <span className="text-[var(--accent)] font-bold uppercase">{project.title}</span>
-            </div>
+          <h1 className="t-h1 m-0 t-measure-tight">{project.title}</h1>
+          <p className="t-lede t-measure m-0">{project.summary}</p>
 
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <span className="label">{project.badge}</span>
-              <div className="flex items-center gap-2">
-                {project.status === "Live" ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF2FF] px-3 py-1 text-xs font-medium text-[var(--accent)] border border-[#2563EB]/15 font-mono">
-                    <span className="h-2 w-2 rounded-full bg-[var(--accent)] animate-pulse" />
-                    Live in Production
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 border border-amber-200 font-mono">
-                    In Development
-                  </span>
-                )}
-                <span className="text-xs font-mono text-[#9ca3af]">{project.year}</span>
-              </div>
-            </div>
+          {project.liveUrl || project.repoUrl ? (
+            <Stack row gap={3}>
+              {project.liveUrl ? (
+                <Button href={project.liveUrl}>Visit {project.title}</Button>
+              ) : null}
+              {project.repoUrl ? (
+                <Button href={project.repoUrl} variant="secondary">
+                  View the code
+                </Button>
+              ) : null}
+            </Stack>
+          ) : null}
+        </Stack>
+      </Section>
 
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#111]">
-              {project.title}
-            </h1>
-
-            <p className="max-w-3xl text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed">
-              {project.tagline}
-            </p>
-
-            {project.liveUrl && (
-              <div className="pt-2">
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-[var(--accent)] px-7 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-[var(--accent-hover)]"
-                >
-                  Visit live application
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </a>
-              </div>
-            )}
-
-            {/* Showcase banner */}
-            {project.image && (
-              <div className="pt-8">
-                <div className="overflow-hidden rounded-2xl border border-[#00000010] bg-[#0c121e] shadow-lg">
-                  <Image
-                    src={project.image}
-                    alt={`${project.title} live interface preview`}
-                    width={1376}
-                    height={768}
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 1000px"
-                    className="h-auto w-full object-cover"
-                  />
-                </div>
-              </div>
-            )}
+      {gallery.length > 0 ? (
+        <Section size="sm" bleed>
+          <div className="wrapper">
+            <Image
+              src={gallery[0].src}
+              alt={gallery[0].alt}
+              width={gallery[0].width}
+              height={gallery[0].height}
+              sizes="(max-width: 75rem) 100vw, 1200px"
+              priority
+              className="w-full rounded-[var(--r-lg)] border border-line object-cover"
+            />
           </div>
-        </div>
+        </Section>
+      ) : null}
 
-        {/* Content & Sticky Sidebar Grid */}
-        <div className="wrapper max-w-[1160px] pt-14">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-12 lg:gap-16 items-start">
-            
-            {/* Main Long-Form Case Study */}
-            <div className="space-y-16">
-              
-              {/* Metrics Highlights Grid */}
-              <div className="rounded-2xl border border-[#0000000d] bg-white p-8 shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] font-mono block mb-4">
-                  Key Production Metrics
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                  {project.results.map((res) => (
-                    <div key={res.label} className="space-y-1">
-                      <p className="text-2xl md:text-3xl font-bold text-[#111] font-mono">
-                        {res.value}
-                      </p>
-                      <p className="text-xs text-[#6b7280]">
-                        {res.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      {hasRichText(project.challenge) ? (
+        <Section tone="sub" divider>
+          <SectionHeader title="The challenge" />
+          <RichText data={project.challenge} />
+        </Section>
+      ) : null}
 
-              {/* The Challenge */}
-              <section className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-[var(--accent)] uppercase tracking-wider">
-                    01 · THE PROBLEM
-                  </span>
-                  <div className="h-px flex-1 bg-[#0000000d]" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-[#111]">
-                  The Challenge
-                </h2>
-                <p className="text-base leading-relaxed text-[var(--text-secondary)]">
-                  {project.challenge}
-                </p>
-              </section>
+      {hasRichText(project.solution) ? (
+        <Section divider>
+          <SectionHeader title="What we did" />
+          <RichText data={project.solution} />
+        </Section>
+      ) : null}
 
-              {/* Our Approach */}
-              <section className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-[var(--accent)] uppercase tracking-wider">
-                    02 · ARCHITECTURE & DESIGN
-                  </span>
-                  <div className="h-px flex-1 bg-[#0000000d]" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-[#111]">
-                  Our Approach
-                </h2>
-                <p className="text-base leading-relaxed text-[var(--text-secondary)]">
-                  {project.approach}
-                </p>
-              </section>
+      {(project.results ?? []).length > 0 ? (
+        <Section tone="sub" divider>
+          <SectionHeader title="Results" lede="Measured, not estimated." />
+          <ResultList results={project.results} />
+        </Section>
+      ) : null}
 
-              {/* The Solution */}
-              <section className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-[var(--accent)] uppercase tracking-wider">
-                    03 · PRODUCTION SYSTEM
-                  </span>
-                  <div className="h-px flex-1 bg-[#0000000d]" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-[#111]">
-                  The Solution
-                </h2>
-                <p className="text-base leading-relaxed text-[var(--text-secondary)]">
-                  {project.solution}
-                </p>
-              </section>
+      {stack.length > 0 ? (
+        <Section divider size="sm">
+          <SectionHeader title="Stack" level="h3" />
+          <ul className="flex list-none flex-wrap gap-[var(--s-2)] p-0 m-0">
+            {stack.map((item) => (
+              <li key={item.id ?? item.tech}>
+                <Badge mono>{item.tech}</Badge>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
 
-              {/* Testimonial Quote (if present) */}
-              {project.quote && (
-                <div className="rounded-2xl border border-[#2563EB]/15 bg-[#EAF2FF]/40 p-8 space-y-4">
-                  <div className="flex items-center gap-1 text-[var(--accent)]">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <blockquote className="text-base italic leading-relaxed text-[#111]">
-                    &ldquo;{project.quote.text}&rdquo;
-                  </blockquote>
-                  <div className="pt-2 text-xs font-mono">
-                    <p className="font-bold text-[#111]">{project.quote.author}</p>
-                    <p className="text-[#6b7280]">{project.quote.role}</p>
-                  </div>
-                </div>
-              )}
+      {contributors.length > 0 ? (
+        <Section tone="sub" divider>
+          <SectionHeader title="Built by" />
+          <Grid cols={3} gap={4}>
+            {contributors.map((member) => (
+              <MemberCard key={member.id} member={member} />
+            ))}
+          </Grid>
+        </Section>
+      ) : null}
 
-              {/* Next Case Study Navigation Band */}
-              <div className="border-t border-[#0000000d] pt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <Link
-                  href="/work"
-                  className="text-xs font-mono font-bold text-[#6b7280] hover:text-[#111] transition-colors"
-                >
-                  ← ALL CASE STUDIES
-                </Link>
+      {gallery.length > 1 ? (
+        <Section divider>
+          <SectionHeader title="Gallery" />
+          <Grid cols={2} gap={4}>
+            {gallery.slice(1).map((image) => (
+              <Image
+                key={image.src}
+                src={image.src}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                sizes="(max-width: 40rem) 100vw, 50vw"
+                className="w-full rounded-[var(--r-md)] border border-line object-cover"
+              />
+            ))}
+          </Grid>
+        </Section>
+      ) : null}
 
-                <Link
-                  href={`/work/${nextProject.slug}`}
-                  className="group inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:underline"
-                >
-                  <span>Next: {nextProject.title}</span>
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </Link>
-              </div>
-            </div>
+      {testimonials.length > 0 ? (
+        <Section divider>
+          <SectionHeader title="What they said" />
+          <Grid cols={2} gap={4}>
+            {testimonials.map((testimonial) => (
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+            ))}
+          </Grid>
+        </Section>
+      ) : null}
 
-            {/* Sticky Metadata Snapshot Sidebar */}
-            <aside className="sticky top-28 space-y-6">
-              <div className="rounded-2xl border border-[#0000000d] bg-white p-7 shadow-xs space-y-6">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#111] font-mono border-b border-[#00000008] pb-3">
-                  Project Snapshot
-                </h3>
-
-                <div className="space-y-4 text-xs">
-                  <div>
-                    <span className="text-[#9ca3af] font-mono uppercase block mb-1">Client / Product</span>
-                    <p className="font-semibold text-[#111] text-sm">{project.client}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-[#9ca3af] font-mono uppercase block mb-1">Industry</span>
-                    <p className="font-medium text-[#111]">{project.industry}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-[#9ca3af] font-mono uppercase block mb-1">Delivery Timeline</span>
-                    <p className="font-medium text-[#111]">{project.timeline}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-[#9ca3af] font-mono uppercase block mb-1">Services Delivered</span>
-                    <ul className="space-y-1 font-medium text-[#111]">
-                      {project.services.map((s) => (
-                        <li key={s} className="flex items-center gap-1.5">
-                          <span className="h-1 w-1 rounded-full bg-[var(--accent)]" />
-                          <span>{s}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <span className="text-[#9ca3af] font-mono uppercase block mb-2">Technology Stack</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {project.stack.map((t) => (
-                        <span key={t} className="rounded border border-[#e5e7eb] bg-[#f9fafb] px-2 py-0.5 text-[11px] font-mono text-[#374151]">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[#0000000a] space-y-2">
-                  <button
-                    onClick={() => setBookingOpen(true)}
-                    className="w-full inline-flex min-h-[42px] items-center justify-center rounded-xl bg-[var(--accent)] text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
-                  >
-                    Build something similar
-                  </button>
-                  <a
-                    href="https://wa.me/256700000000?text=Hi%20RENOA%2C%20I%20reviewed%20your%20case%20study%20for%20"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border border-[#2563EB] bg-[#2563EB]/10 text-xs font-semibold text-[#2563EB] hover:bg-[#2563EB]/20 transition-colors"
-                  >
-                    Chat on WhatsApp
-                  </a>
-                </div>
-              </div>
-            </aside>
-
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-      <WhatsAppButton />
-      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
-    </div>
+      {posts.length > 0 ? (
+        <Section tone="sub" divider>
+          <SectionHeader title="Updates" />
+          <Grid cols={3} gap={4}>
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </Grid>
+        </Section>
+      ) : null}
+    </>
   );
 }

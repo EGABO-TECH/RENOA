@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
 
+import { AnnouncementBar } from "@/components/site/AnnouncementBar";
+import { BookCallBar } from "@/components/site/BookCallBar";
+import { DraftBanner } from "@/components/site/DraftBanner";
+import { MaintenanceNotice } from "@/components/site/MaintenanceNotice";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { SkipLink, THEME_BOOT_SCRIPT } from "@/components/ui";
+import { getNavigation, getSiteSettings } from "@/lib/cms";
+import { buildMetadata } from "@/lib/site";
 
 import "./globals.css";
 
@@ -35,76 +43,35 @@ const mono = JetBrains_Mono({
 });
 
 /**
- * The canonical origin. `renoa.tech` is still unconfirmed (see section 11 of
- * the build brief), so it stays overridable by env rather than being compiled
- * in — set NEXT_PUBLIC_SITE_URL once the domain is settled.
+ * The site-wide defaults come from Site Settings, so the canonical origin and
+ * the share image are editable rather than compiled in (brief section 9). The
+ * old hardcoded `renoa.tech` canonical is gone with them.
  */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://renoa.tech";
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
 
-export const metadata: Metadata = {
-  title: "RENOA | Software Studio — Kampala, Uganda",
-  description:
-    "Product design, platform engineering, and AI operations from Kampala for teams across East Africa and global markets. Book a free discovery call.",
-  keywords: [
-    "software studio",
-    "product design",
-    "Kampala",
-    "Uganda",
-    "web development",
-    "AI automation",
-    "Mobile Money integration",
-    "MTN MoMo",
-    "RENOA",
-    "East Africa tech",
-  ],
-  metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: siteUrl,
-  },
-  openGraph: {
-    title: "RENOA | Software Studio — Kampala, Uganda",
-    description:
-      "Product design, platform engineering, and AI operations from Kampala for teams across East Africa and global markets.",
-    type: "website",
-    url: siteUrl,
-    siteName: "RENOA",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1376,
-        height: 768,
-        alt: "RENOA Software Studio — Kampala, Uganda",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "RENOA | Software Studio — Kampala, Uganda",
-    description:
-      "Product design, engineering, and AI from Kampala for East Africa and global markets.",
-    site: "@renoa_tech",
-    images: ["/og-image.jpg"],
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
-};
+  return {
+    ...buildMetadata({ settings, path: "/" }),
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
+  };
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
+
   return (
     <html
       lang="en"
       className={`${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
     >
       <head>
         {/* Applies a stored light/dark choice before the first paint, so a
@@ -113,7 +80,27 @@ export default function RootLayout({
       </head>
       <body>
         <SkipLink />
-        {children}
+        <DraftBanner />
+
+        {settings.maintenanceMode ? (
+          // A holding page for readers. The admin lives in its own route group
+          // and is untouched by this, so the team can still sign in and work.
+          <MaintenanceNotice settings={settings} />
+        ) : (
+          <>
+            <AnnouncementBar settings={settings} />
+            <SiteHeader navigation={navigation} settings={settings} />
+
+            {/* The bottom padding leaves room for the pinned "Book a call"
+                bar, which only exists below the lg breakpoint. */}
+            <main id="main" className="pb-[5.5rem] lg:pb-0">
+              {children}
+            </main>
+
+            <SiteFooter navigation={navigation} settings={settings} />
+            <BookCallBar navigation={navigation} />
+          </>
+        )}
       </body>
     </html>
   );

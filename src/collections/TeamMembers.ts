@@ -2,16 +2,20 @@ import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { canUpdateTeamMember, deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
+import { revalidateCollection, teamMemberPaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const TeamMembers: CollectionConfig = {
   slug: "team-members",
   labels: { singular: "Team member", plural: "Team" },
   admin: {
+    ...previewConfig("team-members"),
     group: "Content",
     useAsTitle: "fullName",
     defaultColumns: ["fullName", "title", "functionGroup", "displayOrder", "isVisible"],
     description: "Titles and name spellings come from the build brief, not from the old site.",
   },
+  hooks: revalidateCollection(teamMemberPaths),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

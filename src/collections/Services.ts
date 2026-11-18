@@ -2,14 +2,18 @@ import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
+import { revalidateCollection, servicePaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const Services: CollectionConfig = {
   slug: "services",
   admin: {
+    ...previewConfig("services"),
     group: "Content",
     useAsTitle: "title",
     defaultColumns: ["title", "displayOrder"],
   },
+  hooks: revalidateCollection(servicePaths),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isAdmin } from "@/lib/access";
+import { revalidateEverything } from "@/lib/revalidate";
 
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
@@ -8,6 +9,7 @@ export const SiteSettings: GlobalConfig = {
   versions: { max: 20 },
   // Editors read, only admins write (brief section 6).
   access: { read: anyone, update: isAdmin },
+  hooks: { afterChange: revalidateEverything },
   fields: [
     {
       type: "tabs",

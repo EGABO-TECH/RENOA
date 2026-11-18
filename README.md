@@ -128,6 +128,57 @@ Fonts are self-hosted through `next/font` — Archivo for display, Inter for
 body, JetBrains Mono for values that really are code or machine data. No
 request reaches Google from a reader's browser.
 
+## Public pages
+
+Every public route renders from the CMS. Nothing on a page is written in a
+component: the copy, the order of the homepage sections, the nav and footer
+links, the section labels and the canonical domain all come from Payload.
+
+Reads go through `src/lib/cms.ts`, and two rules hold across all of it:
+
+- `overrideAccess: false`, so the queries run as an anonymous user and the
+  access functions in `src/lib/access.ts` decide what comes back. "Published
+  only" is enforced in one place instead of being restated as a `where` clause
+  in every query.
+- `draft: true` is passed only when Next's draft mode is on, and the only thing
+  that can turn it on is `/preview`, which verifies a real Payload session
+  first. No token travels in a preview URL.
+
+Pages are statically generated. When a document changes, the hooks built by
+`src/lib/revalidate.ts` tell Next which routes that affects — including the
+ones only reachable by relationship, so editing a project also refreshes the
+service pages that list it as proof and the profiles of everyone who built it.
+An edit is live in seconds without a redeploy.
+
+Two index routes, `/work` and `/journal`, read their filters from the query
+string and so render on demand. The filters are plain links: shareable,
+usable without JavaScript, and with no client bundle to download.
+
+### Routes
+
+| Route | Source |
+| --- | --- |
+| `/` | Homepage global — ordered, hideable section blocks |
+| `/services`, `/services/[slug]` | Services; engagement models from a page with the slug `engagement-models` |
+| `/work`, `/work/[slug]` | Projects, filterable by type and status |
+| `/team`, `/team/[slug]` | Team members, grouped by function |
+| `/journal`, `/journal/[slug]`, `/journal/rss.xml` | Posts; the label comes from `SiteSettings.journalLabel` |
+| `/about` | A page with the slug `about`, plus structure from the team and a timeline from Milestones |
+| `/careers`, `/careers/[slug]` | A page with the slug `careers`, plus open Jobs |
+| `/contact` | Site Settings contact channels |
+| `/faq` | FAQs with no service set |
+| `/[slug]` | Any other page in the Pages collection |
+| `/preview`, `/preview/exit` | Draft mode, behind a Payload session check |
+
+The four routes the brief renames — `/leadership`, `/insights`, `/projects`
+and `/pricing` — are 301s to `/team`, `/journal`, `/work` and `/services`.
+
+### Building the site
+
+`next build` prerenders these pages, so the build needs `DATABASE_URL` to
+point at a reachable Postgres. A build with the database down fails rather
+than publishing an empty site.
+
 ## Roles
 
 Three roles, enforced by Payload access functions on every collection and global

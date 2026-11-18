@@ -1,77 +1,38 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useState } from "react";
-import Nav from "@/components/Nav";
-import Hero from "@/components/Hero";
-import WhoWeHelp from "@/components/WhoWeHelp";
-import WorkGrid from "@/components/WorkGrid";
-import Process from "@/components/Process";
-import Capabilities from "@/components/Capabilities";
-import Differentiators from "@/components/Differentiators";
-import TechStackStrip from "@/components/TechStackStrip";
-import Testimonials from "@/components/Testimonials";
-import TeamStrip from "@/components/TeamStrip";
-import FAQSection from "@/components/FAQSection";
-import CTABand from "@/components/CTABand";
-import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import { Blocks } from "@/components/blocks/Blocks";
+import { EmptyState } from "@/components/site/Bits";
+import { Section } from "@/components/ui";
+import { getHomepage, getSiteSettings } from "@/lib/cms";
+import { buildMetadata } from "@/lib/site";
 
-export default function Home() {
-  const [bookingOpen, setBookingOpen] = useState(false);
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return buildMetadata({ settings, path: "/" });
+}
 
-  return (
-    <div className="min-h-screen bg-[#fdfdfd] text-[#111827] selection:bg-[#2563EB] selection:text-white">
-      {/* Top Navbar */}
-      <Nav onOpenBooking={() => setBookingOpen(true)} />
+/**
+ * The homepage is whatever the Homepage global says it is.
+ *
+ * There is no fixed section order in this file: the admin's section builder
+ * owns it, down to which sections exist and whether each one is shown. That is
+ * the difference the rebuild is for — the old homepage's order was a sequence
+ * of imports that only a developer could change.
+ */
+export default async function HomePage() {
+  const homepage = await getHomepage();
+  const sections = homepage.sections ?? [];
 
-      {/* Main content flow */}
-      <main id="main">
-        {/* Hero with live proof strip */}
-        <Hero onOpenBooking={() => setBookingOpen(true)} />
+  if (sections.length === 0) {
+    return (
+      <Section>
+        <EmptyState>
+          The homepage has no sections yet. Add them under Site → Homepage in the
+          admin; each one can be reordered and hidden without a deploy.
+        </EmptyState>
+      </Section>
+    );
+  }
 
-        {/* Who We Build For */}
-        <WhoWeHelp />
-
-        {/* Selected Work — 3-Card Grid + 01/03 Counter */}
-        <WorkGrid />
-
-        {/* Process — 4 Steps + Outputs + Durations */}
-        <Process />
-
-        {/* Capabilities — 5 Core Pillars */}
-        <Capabilities />
-
-        {/* Why RENOA — Key Differentiators */}
-        <Differentiators />
-
-        {/* Tech Stack Strip */}
-        <TechStackStrip />
-
-        {/* Social Proof & Testimonials */}
-        <Testimonials />
-
-        {/* Leadership Team Strip — 6 Co-Founders in Kampala */}
-        <TeamStrip />
-
-        {/* Top FAQs Preview */}
-        <FAQSection limit={5} />
-
-        {/* Closing CTA Band */}
-        <CTABand onOpenBooking={() => setBookingOpen(true)} />
-      </main>
-
-      {/* 4-Column Footer */}
-      <Footer />
-
-      {/* Global Floating WhatsApp shortcut */}
-      <WhatsAppButton />
-
-      {/* Booking / Lead intake Modal */}
-      <BookingModal
-        isOpen={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-      />
-    </div>
-  );
+  return <Blocks sections={sections} />;
 }

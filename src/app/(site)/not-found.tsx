@@ -1,36 +1,49 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
-import { ArrowLeft } from "lucide-react";
 
+import { Button, Container, Section, Stack } from "@/components/ui";
+import { routes } from "@/lib/site";
+
+/**
+ * 404.
+ *
+ * The header, footer and the rest of the chrome come from the site layout, so
+ * this page is only the message — the old version rendered its own navigation
+ * and footer, which would now paint them twice.
+ *
+ * The links are the four places someone who mistyped a URL is most likely to
+ * have been heading. No search box: there is no search on the site, and a box
+ * that does nothing is worse than a short list that works.
+ */
 export default function NotFound() {
-  const [bookingOpen, setBookingOpen] = useState(false);
-
   return (
-    <div className="min-h-screen bg-[#fdfdfd] text-[#111827] flex flex-col justify-between selection:bg-[#2563EB] selection:text-white">
-      <Nav onOpenBooking={() => setBookingOpen(true)} />
+    <Section size="lg">
+      <Container width="text">
+        <Stack gap={5} align="start">
+          <p className="t-mono text-faint m-0">404</p>
+          <h1 className="t-h1 m-0">That page does not exist.</h1>
+          <p className="t-lede m-0">
+            It may have moved, or the link may be wrong. These are the main
+            sections of the site.
+          </p>
 
-      <main id="main" className="py-32 flex flex-col items-center justify-center text-center px-4">
-        <div className="font-mono text-6xl font-extrabold text-[#2563EB] mb-4">404</div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#111827] mb-2">Page Not Found</h1>
-        <p className="text-[#4B5563] max-w-md mb-8">
-          The requested system node does not exist or has been moved to a new route.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to RENOA</span>
-        </Link>
-      </main>
+          <Stack row gap={3}>
+            <Button href={routes.home}>Home</Button>
+            <Button href={routes.work} variant="secondary">
+              Work
+            </Button>
+            <Button href={routes.services} variant="secondary">
+              Services
+            </Button>
+            <Button href={routes.contact} variant="secondary">
+              Contact
+            </Button>
+          </Stack>
 
-      <Footer />
-      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
-    </div>
+          <Link href={routes.team} className="t-small text-brand">
+            Or meet the team
+          </Link>
+        </Stack>
+      </Container>
+    </Section>
   );
 }

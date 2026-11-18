@@ -2,15 +2,19 @@ import type { CollectionConfig } from "payload";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
 import { pageBlocks } from "@/blocks";
+import { revalidateCollection, pagePaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
+    ...previewConfig("pages"),
     group: "Site",
     useAsTitle: "title",
     defaultColumns: ["title", "slug", "updatedAt"],
     description: "Backs /faq, /security, /privacy, /terms and any other standalone page.",
   },
+  hooks: revalidateCollection(pagePaths),
   versions: { drafts: true, maxPerDoc: 25 },
   access: { read: publishedOrLoggedIn, create: isEditor, update: isEditor, delete: deleteOnlyAdmin },
   fields: [

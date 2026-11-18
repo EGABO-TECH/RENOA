@@ -39,8 +39,23 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  /**
+   * The sitemap in section 4 of the brief renames four routes. These keep the
+   * old URLs working — they are in search results, in LinkedIn posts and in
+   * the footer of anything already sent out, and a 301 is what tells a crawler
+   * to move the ranking across rather than record a dead page.
+   *
+   * `/pricing` folds into `/services`, where the engagement models now live as
+   * a section of that page.
+   */
   async redirects() {
-    return [];
+    return [
+      { source: "/leadership", destination: "/team", permanent: true },
+      { source: "/insights", destination: "/journal", permanent: true },
+      { source: "/insights/:slug", destination: "/journal/:slug", permanent: true },
+      { source: "/projects", destination: "/work", permanent: true },
+      { source: "/pricing", destination: "/services", permanent: true },
+    ];
   },
 };
 

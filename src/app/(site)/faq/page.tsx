@@ -1,133 +1,90 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useState } from "react";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import { FAQS } from "@/data/faq";
+import { Blocks } from "@/components/blocks/Blocks";
+import { EmptyState, FAQList } from "@/components/site/Bits";
+import { Button, Card, Container, Section, SectionHeader, Stack } from "@/components/ui";
+import { getFAQs, getPage, getServices, getSiteSettings } from "@/lib/cms";
+import { buildMetadata, routes } from "@/lib/site";
 
-const CATEGORIES = ["All", "General", "Engagement & Milestones", "Process & Timeline", "IP & Security", "Support"] as const;
+export async function generateMetadata(): Promise<Metadata> {
+  const [page, settings] = await Promise.all([getPage("faq"), getSiteSettings()]);
 
-export default function FAQPage() {
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  return buildMetadata({
+    settings,
+    path: "/faq",
+    title: page?.title ?? "FAQ",
+    description: `Common questions about working with ${settings.siteName}.`,
+    seo: page?.seo,
+  });
+}
 
-  const filtered = activeCategory === "All" ? FAQS : FAQS.filter((f) => f.category === activeCategory);
+/**
+ * The general FAQ, from the FAQs collection.
+ *
+ * `getFAQs()` with no argument returns the entries with no service set —
+ * service-specific questions belong on that service's own page, and a question
+ * answered in two places goes stale in one of them. Where a page with the slug
+ * `faq` exists, its sections render underneath, which is how an intro or a
+ * closing note gets added without a deploy.
+ *
+ * This replaces a hardcoded list that shipped its own navigation and footer
+ * and its own light-mode colours; the questions now live in the CMS where the
+ * team can answer them.
+ */
+export default async function FAQPage() {
+  const [faqs, page, services, settings] = await Promise.all([
+    getFAQs(),
+    getPage("faq"),
+    getServices(),
+    getSiteSettings(),
+  ]);
 
   return (
-    <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
-      <Nav onOpenBooking={() => setBookingOpen(true)} />
+    <>
+      <Section size="lg">
+        <Container width="text">
+          <SectionHeader
+            level="h1"
+            title="Questions"
+            lede="What people ask before they start a project with us."
+          />
 
-      <main id="main" className="pt-32 pb-24">
-        {/* Header */}
-        <div className="wrapper max-w-[900px] mb-12 space-y-4">
-          <span className="label">FREQUENTLY ASKED QUESTIONS</span>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#111]">
-            Everything you need to know.
-          </h1>
-          <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed">
-            Honest answers to the questions our clients ask most. If yours isn’t here, email{" "}
-            <a href="mailto:hello@renoa.tech" className="text-[var(--accent)] hover:underline">
-              hello@renoa.tech
-            </a>{" "}
-            or{" "}
-            <button
-              onClick={() => setBookingOpen(true)}
-              className="text-[var(--accent)] hover:underline font-medium"
-            >
-              book a free call
-            </button>
-            .
-          </p>
-        </div>
+          {faqs.length > 0 ? (
+            <FAQList faqs={faqs} />
+          ) : (
+            <EmptyState>
+              No questions are published yet. They live under Content → FAQs in the
+              admin; leave the category empty for a question to appear here.
+            </EmptyState>
+          )}
+        </Container>
+      </Section>
 
-        {/* Category Filter */}
-        <div className="wrapper max-w-[900px] mb-10">
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => { setActiveCategory(cat); setOpenIdx(null); }}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium font-mono transition-all ${
-                  activeCategory === cat
-                    ? "bg-[#111] text-white"
-                    : "bg-[#f3f4f6] text-[#4b5563] hover:bg-[#e5e7eb] hover:text-[#111]"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
+      {page?.layout?.length ? <Blocks sections={page.layout} /> : null}
 
-        {/* FAQ Accordion */}
-        <div className="wrapper max-w-[900px] space-y-3">
-          {filtered.map((faq, i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-[#0000000d] bg-white overflow-hidden hover:border-[var(--accent)]/30 transition-colors"
-            >
-              <button
-                onClick={() => setOpenIdx(openIdx === i ? null : i)}
-                className="w-full flex items-start justify-between gap-4 px-7 py-5 text-left"
-                id={`faq-${i}`}
-                aria-expanded={openIdx === i}
-              >
-                <div className="flex items-start gap-4 flex-1">
-                  <span className="text-[10px] font-bold font-mono text-[var(--accent)] mt-0.5 shrink-0 uppercase tracking-wider">
-                    {faq.category.split(" ")[0]}
-                  </span>
-                  <span className="text-sm font-semibold text-[#111] leading-snug">{faq.question}</span>
-                </div>
-                <svg
-                  className={`w-5 h-5 shrink-0 text-[#9ca3af] transition-transform duration-200 ${openIdx === i ? "rotate-180" : ""}`}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                >
-                  <path d="m6 9 6 6 6-6"/>
-                </svg>
-              </button>
-              {openIdx === i && (
-                <div className="px-7 pb-6 text-sm text-[var(--text-secondary)] leading-relaxed border-t border-[#0000000d] pt-5 ml-0">
-                  {faq.answer}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Still have questions CTA */}
-        <div className="wrapper max-w-[900px] mt-20">
-          <div className="rounded-2xl border border-[#0000000d] bg-white p-8 md:p-12 text-center space-y-4 shadow-sm">
-            <h3 className="text-2xl font-bold text-[#111]">Still have a question?</h3>
-            <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
-              Our engineering team responds to email within one business day. For urgent matters, WhatsApp is fastest.
-            </p>
-            <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={() => setBookingOpen(true)}
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--accent)] px-7 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
-              >
-                Book a free call
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </button>
-              <a
-                href="https://wa.me/256700000000?text=Hi%20RENOA%2C%20I%20have%20a%20question."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#2563EB] bg-[#2563EB]/10 px-7 text-sm font-medium text-[#2563EB] transition-colors hover:bg-[#2563EB]/20"
-              >
-                Chat on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-      <WhatsAppButton />
-      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
-    </div>
+      {services.length > 0 ? (
+        <Section tone="sub" divider>
+          <Container width="text">
+            <Card tone="flat">
+              <Stack gap={3} align="start">
+                <h2 className="t-h4 m-0">Looking for something more specific?</h2>
+                <p className="t-small text-muted m-0">
+                  Each service page answers the questions particular to that kind of
+                  work.
+                </p>
+                <Stack row gap={3}>
+                  <Button href={routes.services} variant="secondary" size="sm">
+                    Services
+                  </Button>
+                  <Button href={`mailto:${settings.contactEmail}`} size="sm">
+                    Ask us directly
+                  </Button>
+                </Stack>
+              </Stack>
+            </Card>
+          </Container>
+        </Section>
+      ) : null}
+    </>
   );
 }

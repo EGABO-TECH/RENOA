@@ -1,119 +1,136 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useState } from "react";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
-import { Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { Blocks } from "@/components/blocks/Blocks";
+import { Button, Card, Grid, Section, SectionHeader, Stack } from "@/components/ui";
+import { getNavigation, getPage, getSiteSettings } from "@/lib/cms";
+import { buildMetadata, routes, whatsappUrl } from "@/lib/site";
 
-export default function ContactPage() {
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+export async function generateMetadata(): Promise<Metadata> {
+  const [page, settings] = await Promise.all([getPage("contact"), getSiteSettings()]);
+
+  return buildMetadata({
+    settings,
+    path: routes.contact,
+    title: page?.title ?? "Contact",
+    description: `Reach ${settings.siteName} in Kampala — email, WhatsApp, or book a call.`,
+    seo: page?.seo,
+  });
+}
+
+/**
+ * Contact: every way to reach the studio, each one read from Site Settings.
+ *
+ * What is here works today. The WhatsApp button appears only when the number
+ * is set — the live site shipped a placeholder that dialled nobody, and
+ * section 9 asks for the button to be hidden rather than filled in with
+ * something fake.
+ *
+ * Still to come in phase 4: the inquiry form, which writes to the Inquiries
+ * collection and needs the honeypot, Turnstile and email alerts that phase
+ * covers, and the Cal.com embed. Until then "Book a call" points at whatever
+ * the Navigation global's book-call link is set to, so pasting a real Cal.com
+ * URL in the admin makes that button work immediately.
+ */
+export default async function ContactPage() {
+  const [page, settings, navigation] = await Promise.all([
+    getPage("contact"),
+    getSiteSettings(),
+    getNavigation(),
+  ]);
+
+  const whatsapp = whatsappUrl(settings, `Hello ${settings.siteName}`);
+  const bookCall = navigation.bookCallLink;
+  // Only an external scheduler is worth a button here; the default link points
+  // back at this page's own booking section.
+  const scheduler = /^https?:/.test(bookCall.url) ? bookCall : null;
 
   return (
-    <div className="min-h-screen bg-white text-[#0a0a0a]">
-      <Nav onOpenBooking={() => setBookingOpen(true)} />
+    <>
+      <Section size="lg">
+        <SectionHeader
+          level="h1"
+          title="Contact"
+          lede="Tell us what you are building and who it is for. We answer within a working day."
+        />
 
-      <main id="main" className="pt-32 pb-24">
-        <div className="wrapper max-w-4xl">
-          <div className="space-y-3 mb-12">
-            <span className="label">Contact RENOA</span>
-            <h1 className="text-5xl font-bold text-[#0a0a0a] tracking-tight">
-              Let&apos;s build something that means business.
-            </h1>
-            <p className="text-lg text-[#525252]">
-              Reach out to our engineering team in Kampala for consultations, partnerships, or project inquiries.
-            </p>
-          </div>
+        <Grid cols={2} gap={4}>
+          <Card>
+            <Stack gap={4} align="start">
+              <h2 className="t-h3 m-0">Email</h2>
+              <p className="t-small text-muted m-0">
+                The surest way to reach all six of us.
+              </p>
+              <Button href={`mailto:${settings.contactEmail}`}>
+                {settings.contactEmail}
+              </Button>
+            </Stack>
+          </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Info column */}
-            <div className="lg:col-span-2 card p-7 space-y-6 h-fit">
-              <h3 className="text-lg font-bold text-[#0a0a0a]">Direct Contact</h3>
-              <div className="space-y-4 text-sm">
-                <div className="flex items-start gap-3">
-                  <Mail className="w-4 h-4 text-[#2563EB] mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-mono text-[#a3a3a3] uppercase mb-0.5">Email</p>
-                    <a href="mailto:renoacollective@gmail.com" className="font-medium text-[#0a0a0a] hover:text-[#2563EB] transition-colors">
-                      renoacollective@gmail.com
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-[#2563EB] mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-mono text-[#a3a3a3] uppercase mb-0.5">Location</p>
-                    <p className="font-medium text-[#0a0a0a]">Kampala, Uganda</p>
-                  </div>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-[#e5e5e5]">
-                <button
-                  onClick={() => setBookingOpen(true)}
-                  className="btn btn-outline w-full justify-center"
-                >
-                  Schedule via Cal.com
-                </button>
-              </div>
-            </div>
+          {whatsapp ? (
+            <Card>
+              <Stack gap={4} align="start">
+                <h2 className="t-h3 m-0">WhatsApp</h2>
+                <p className="t-small text-muted m-0">
+                  For a quick question, or if email is slow where you are.
+                </p>
+                <Button href={whatsapp} variant="secondary">
+                  Message us on WhatsApp
+                </Button>
+              </Stack>
+            </Card>
+          ) : null}
 
-            {/* Form column */}
-            <div id="inquiry" className="lg:col-span-3 card p-7 scroll-mt-28">
-              {!submitted ? (
-                <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
-                  <h3 className="text-lg font-bold text-[#0a0a0a] mb-2">Project Inquiry</h3>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#525252] mb-1 uppercase tracking-wider">Name</label>
-                    <input
-                      type="text" required
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-lg text-sm text-[#0a0a0a] placeholder-[#a3a3a3] focus:outline-none focus:border-[#2563EB] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#525252] mb-1 uppercase tracking-wider">Email</label>
-                    <input
-                      type="email" required
-                      placeholder="you@company.com"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-lg text-sm text-[#0a0a0a] placeholder-[#a3a3a3] focus:outline-none focus:border-[#2563EB] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#525252] mb-1 uppercase tracking-wider">Message</label>
-                    <textarea
-                      rows={5} required
-                      placeholder="Tell us what you want to build..."
-                      value={form.message}
-                      onChange={(e) => setForm({ ...form, message: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-lg text-sm text-[#0a0a0a] placeholder-[#a3a3a3] focus:outline-none focus:border-[#2563EB] transition-colors resize-none"
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-fill w-full justify-center">
-                    <Send className="w-4 h-4" /> Send Message
-                  </button>
-                </form>
-              ) : (
-                <div className="py-12 text-center space-y-4">
-                  <div className="w-14 h-14 bg-[#E6F2EC] rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-7 h-7 text-[#2563EB]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#0a0a0a]">Message sent!</h3>
-                  <p className="text-sm text-[#525252]">The RENOA team will respond within 24 hours.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
+          {settings.phone ? (
+            <Card>
+              <Stack gap={4} align="start">
+                <h2 className="t-h3 m-0">Phone</h2>
+                <Button href={`tel:${settings.phone.replace(/\s+/g, "")}`} variant="secondary">
+                  {settings.phone}
+                </Button>
+              </Stack>
+            </Card>
+          ) : null}
 
-      <Footer />
-      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
-    </div>
+          {settings.address || settings.hours ? (
+            <Card>
+              <Stack gap={3} align="start">
+                <h2 className="t-h3 m-0">Where we are</h2>
+                {settings.address ? (
+                  <p className="t-small text-muted m-0">{settings.address}</p>
+                ) : null}
+                {settings.hours ? (
+                  <p className="t-small text-faint m-0">{settings.hours}</p>
+                ) : null}
+              </Stack>
+            </Card>
+          ) : null}
+        </Grid>
+      </Section>
+
+      <Section id="book" tone="sub" divider>
+        <SectionHeader
+          title="Book a call"
+          lede="Thirty minutes, no deck. We will tell you whether we are the right studio for it."
+        />
+        <Stack row gap={3}>
+          {scheduler ? (
+            <Button href={scheduler.url} size="lg">
+              {scheduler.label}
+            </Button>
+          ) : (
+            <Button href={`mailto:${settings.contactEmail}?subject=Discovery%20call`} size="lg">
+              Request a call by email
+            </Button>
+          )}
+          {whatsapp ? (
+            <Button href={whatsapp} variant="secondary" size="lg">
+              WhatsApp instead
+            </Button>
+          ) : null}
+        </Stack>
+      </Section>
+
+      {page?.layout?.length ? <Blocks sections={page.layout} /> : null}
+    </>
   );
 }

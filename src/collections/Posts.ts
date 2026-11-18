@@ -2,11 +2,14 @@ import type { CollectionConfig, SelectFieldSingleValidation } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { canUpdatePost, deleteOnlyAdmin, isLoggedIn, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
+import { revalidateCollection, postPaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
   labels: { singular: "Post", plural: "Journal" },
   admin: {
+    ...previewConfig("posts"),
     group: "Content",
     useAsTitle: "title",
     defaultColumns: ["title", "postType", "workflowStatus", "publishedAt", "pinned"],
@@ -20,6 +23,7 @@ export const Posts: CollectionConfig = {
     delete: deleteOnlyAdmin,
   },
   hooks: {
+    ...revalidateCollection(postPaths),
     beforeChange: [
       ({ data, req, originalDoc }) => {
         const role = req.user?.role;

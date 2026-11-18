@@ -2,14 +2,18 @@ import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
+import { revalidateCollection, projectPaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const Projects: CollectionConfig = {
   slug: "projects",
   admin: {
+    ...previewConfig("projects"),
     group: "Content",
     useAsTitle: "title",
     defaultColumns: ["title", "category", "status", "featured", "launchDate"],
   },
+  hooks: revalidateCollection(projectPaths),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

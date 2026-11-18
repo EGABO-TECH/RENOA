@@ -2,11 +2,14 @@ import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
 import { seoGroup, slugField } from "@/lib/fields";
+import { revalidateCollection, jobPaths } from "@/lib/revalidate";
+import { previewConfig } from "@/lib/preview";
 
 export const Jobs: CollectionConfig = {
   slug: "jobs",
   labels: { singular: "Job", plural: "Jobs" },
-  admin: { group: "Pipeline", useAsTitle: "title", defaultColumns: ["title", "type", "isOpen", "closingDate"] },
+  admin: { ...previewConfig("jobs"), group: "Pipeline", useAsTitle: "title", defaultColumns: ["title", "type", "isOpen", "closingDate"] },
+  hooks: revalidateCollection(jobPaths),
   versions: { drafts: true, maxPerDoc: 10 },
   access: { read: publishedOrLoggedIn, create: isEditor, update: isEditor, delete: deleteOnlyAdmin },
   fields: [
