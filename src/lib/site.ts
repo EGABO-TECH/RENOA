@@ -30,15 +30,23 @@ export const routes = {
 /**
  * The canonical origin, with no trailing slash.
  *
- * Section 9 of the brief asks that canonicals and share images come from
- * Site Settings and never from a hardcoded domain, because the production
- * domain is still unsettled. `NEXT_PUBLIC_SITE_URL` is only a fallback for
- * contexts with no database read — it is not the source of truth.
+ * Section 9 of the brief asks that canonicals and share images come from Site
+ * Settings and never from a hardcoded domain, because the production domain is
+ * still unsettled. So `productionDomain` wins, and the rest is a fallback
+ * chain for the case where nobody has saved Site Settings yet:
+ *
+ * 1. `NEXT_PUBLIC_SITE_URL`, if someone set it deliberately.
+ * 2. Vercel's own `VERCEL_PROJECT_PRODUCTION_URL`, which is the deployment's
+ *    real domain. Without this a production build with empty Site Settings
+ *    would publish `http://localhost:3000` as every canonical and every share
+ *    image — wrong in a way nobody notices until a link preview is blank.
+ * 3. localhost, which is only ever right in development.
  */
 export const siteOrigin = (settings?: Pick<SiteSetting, "productionDomain"> | null): string => {
   const raw =
     settings?.productionDomain?.trim() ||
     process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
     "http://localhost:3000";
 
   const withScheme = /^https?:\/\//.test(raw) ? raw : `https://${raw}`;

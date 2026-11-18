@@ -44,6 +44,28 @@ const bin = (file) =>
 // Payload loads .env itself when run through its CLI; we are not, so do it here.
 process.loadEnvFile?.(path.join(root, ".env"));
 
+/**
+ * The collections import `next/cache` for their revalidation hooks. That
+ * module only resolves under Next's own bundler conditions, so leaving it
+ * external makes Node fail with ERR_MODULE_NOT_FOUND on `next/cache`. Neither
+ * of these commands serves a page, so there is nothing to revalidate: the
+ * cache hints become no-ops.
+ */
+const stubNextCache = {
+  name: "stub-next-cache",
+  setup(build) {
+    build.onResolve({ filter: /^next\/cache$/ }, () => ({
+      path: "next-cache",
+      namespace: "stub",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "stub" }, () => ({
+      contents:
+        "export const revalidatePath = () => {};\nexport const revalidateTag = () => {};\n",
+      loader: "js",
+    }));
+  },
+};
+
 const outFile = path.join(root, "node_modules/.cache/renoa/payload.config.mjs");
 await mkdir(path.dirname(outFile), { recursive: true });
 
@@ -57,6 +79,7 @@ await esbuild.build({
   packages: "external",
   alias: { "@": path.join(root, "src") },
   loader: { ".scss": "empty", ".css": "empty" },
+  plugins: [stubNextCache],
   logLevel: "warning",
 });
 
