@@ -58,7 +58,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         {/* Hero */}
         <div className="wrapper max-w-[1160px] mb-20">
           <span className="label">OUR STORY · KAMPALA, UGANDA</span>

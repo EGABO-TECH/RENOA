@@ -27,7 +27,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
     <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         {/* Hero Section */}
         <div className="border-b border-[#0000000d] bg-white pb-16 pt-6">
           <div className="wrapper max-w-[1160px] space-y-6">

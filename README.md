@@ -28,8 +28,10 @@ src/
   collections/     one file per Payload collection
   globals/         SiteSettings, Navigation, Homepage
   blocks/          layout blocks for Pages and the Homepage builder
-  components/      shared UI
-  lib/             access control, shared field groups
+  components/
+    ui/            the design system — layout primitives and core components
+  lib/             access control, shared field groups, helpers
+scripts/           standalone checks (contrast)
 ```
 
 Public routes live in the `(site)` route group; Payload owns `(payload)` and
@@ -67,6 +69,38 @@ The public site runs at `http://localhost:3000` and the admin at
 | `npm run build` | Production build |
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint |
+
+## Design system
+
+Tokens live in `src/app/(site)/globals.css` and nowhere else: surfaces, text,
+brand, lines, feedback, the type scale, the 8-pt spacing steps, radii and
+motion. The palette is derived from the RENOA mark, which runs navy `#04345C`
+into teal `#0B959B`. `design.md` holds the reasoning and records what it
+supersedes.
+
+Light and dark are the same token names with different values. Dark follows
+`prefers-color-scheme` unless the reader picks a mode, which is stored under
+`renoa-theme` and applied before first paint by a small script in the site
+layout, so there is no white flash.
+
+```bash
+node scripts/check-contrast.mjs   # every text/surface pair, both modes, WCAG 2.2 AA
+```
+
+That script reads the values straight out of `globals.css`, so it cannot drift
+from the real tokens. It exits non-zero on a failure, which makes it usable as
+a pre-deploy check.
+
+Components are in `src/components/ui` and exported from one barrel:
+`Container`, `Section`, `SectionHeader`, `Stack`, `Grid`, `Button`, `Card`,
+`CardHeader`, `Badge`, `TextField`, `TextAreaField`, `SelectField`, `Prose`,
+`SkipLink`, `ThemeToggle`. Compose pages from these rather than writing one-off
+markup, so a token change reaches the whole site. `/styleguide` renders all of
+them with the live tokens; it is `noindex` and is not linked from the site.
+
+Fonts are self-hosted through `next/font` — Archivo for display, Inter for
+body, JetBrains Mono for values that really are code or machine data. No
+request reaches Google from a reader's browser.
 
 ## Roles
 

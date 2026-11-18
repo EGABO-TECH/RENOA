@@ -15,7 +15,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         <div className="wrapper max-w-4xl">
           <div className="space-y-3 mb-12">
             <span className="label">Contact RENOA</span>

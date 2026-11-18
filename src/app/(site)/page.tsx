@@ -26,7 +26,7 @@ export default function Home() {
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
       {/* Main content flow */}
-      <main>
+      <main id="main">
         {/* Hero with live proof strip */}
         <Hero onOpenBooking={() => setBookingOpen(true)} />
 

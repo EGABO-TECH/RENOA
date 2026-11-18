@@ -43,7 +43,7 @@ export default function CareersPage() {
     <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         <div className="wrapper space-y-20">
           {/* Hero */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

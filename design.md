@@ -24,7 +24,23 @@
 
 ## 2. Color System
 
-### 2.1 Core Palette (Recommended)
+> **Superseded, 2026-11-15.** The table in 2.1 was a *recommendation*, and this
+> file's own scope note says to replace a recommended value with the official
+> brand value and keep the structure. The RENOA mark runs navy `#04345C` into
+> teal `#0B959B`, which made `--brand: #2F5BFF` a blue that appears nowhere in
+> the logo. The palette is now derived from the mark, so the site and the logo
+> read as one brand.
+>
+> **The implemented tokens live in `src/app/(site)/globals.css`, and that file
+> is the source of truth.** `node scripts/check-contrast.mjs` proves every
+> text and surface pair in it meets WCAG 2.2 AA in both colour modes. The
+> structure below — roles, usage rules, the 8-pt scale, the 1200px measure,
+> borders over heavy shadows — is unchanged and still governs.
+>
+> Also changed: section 2.1's blue is not the same as the `#2563EB` the live
+> site shipped, so neither matched the logo. Both are now retired.
+
+### 2.1 Core Palette (recommended — superseded, see the note above)
 
 | Token | Role | Light mode | Dark mode |
 |---|---|---|---|
@@ -93,6 +109,25 @@ Use fluid sizing (`clamp()`) for Display, H1, and H2.
 - Left-align body text; center only short headings and CTAs.
 - Eyebrow labels (e.g., "PRODUCT STUDIO · KAMPALA", "THE PROCESS") sit above section headings, as on the current site.
 - Numerals in the process steps (01–04) use the mono font.
+
+> **Narrowed, 2026-11-15.** Those last two rules are applied only where the
+> label carries information:
+>
+> - **Kept.** Mono for things that really are machine data — tech chips, repo
+>   names, versions, hex values, endpoints — matching 3.1 and the "small mono
+>   chips" in 7.2. Kept too for a real category on a card ("Mobility",
+>   "Legal"), which is data about that card, though in sentence case rather
+>   than uppercase at `0.08em`.
+> - **Dropped.** The eyebrow above a *section* heading, and the mono 01–04
+>   numbering of process steps. A label that only restates the heading under it
+>   is decoration, the type scale already separates the levels, and uppercase
+>   tracked-out kickers plus mono step numbers are the two most recognisable
+>   tells of a machine-generated layout — which works directly against
+>   principle 6, "consistency is credibility".
+>
+> `SectionHeader` therefore has no eyebrow slot and `CardHeader` does; see
+> `src/components/ui/Section.tsx`. Decided on the user's instruction to pick
+> the better option where this file and the design skills disagreed.
 
 ---
 

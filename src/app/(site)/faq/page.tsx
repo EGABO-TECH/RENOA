@@ -20,7 +20,7 @@ export default function FAQPage() {
     <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         {/* Header */}
         <div className="wrapper max-w-[900px] mb-12 space-y-4">
           <span className="label">FREQUENTLY ASKED QUESTIONS</span>

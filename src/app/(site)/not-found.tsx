@@ -14,7 +14,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-[#fdfdfd] text-[#111827] flex flex-col justify-between selection:bg-[#2563EB] selection:text-white">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="py-32 flex flex-col items-center justify-center text-center px-4">
+      <main id="main" className="py-32 flex flex-col items-center justify-center text-center px-4">
         <div className="font-mono text-6xl font-extrabold text-[#2563EB] mb-4">404</div>
         <h1 className="text-3xl sm:text-4xl font-bold text-[#111827] mb-2">Page Not Found</h1>
         <p className="text-[#4B5563] max-w-md mb-8">

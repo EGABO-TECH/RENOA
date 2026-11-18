@@ -40,7 +40,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#fdfdfd] text-[#111827]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
 
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         {/* Header */}
         <div className="wrapper max-w-[1160px] mb-16 space-y-4">
           <span className="label">ENGAGEMENT MODELS</span>

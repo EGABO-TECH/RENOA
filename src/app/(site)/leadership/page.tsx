@@ -13,7 +13,7 @@ export default function LeadershipPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[#111827]">
       <Nav onOpenBooking={() => setBookingOpen(true)} />
-      <main className="pt-28 pb-20">
+      <main id="main" className="pt-28 pb-20">
         <div className="wrapper max-w-[1160px]">
           {/* Container structure from snippet without images, title, or blue background */}
           <LeadershipContainers />
