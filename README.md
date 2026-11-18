@@ -69,6 +69,32 @@ The public site runs at `http://localhost:3000` and the admin at
 | `npm run build` | Production build |
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint |
+| `npm run generate:types` | Regenerate `src/payload-types.ts` from the Payload config |
+| `npm run migrate:create <name>` | Write a migration from the current schema |
+| `npm run migrate` / `migrate:status` | Apply / inspect migrations |
+| `npm run check:contrast` | WCAG 2.2 AA check on the design tokens |
+
+### Why those go through `scripts/payload.mjs`
+
+The `payload` CLI does not run in this project: it loads `payload.config.ts`
+through `tsx`, whose CJS require hook instantiates undici's internal symbols
+twice, so undici's own `CacheStorage` identity check fails and every command
+dies with `TypeError: Illegal constructor` before reading a single field.
+Changing Node versions, deduping undici and `--no-experimental-require-module`
+do not fix it.
+
+`scripts/payload.mjs` skips `tsx`. esbuild bundles only our own TypeScript, with
+every dependency left external so each package is loaded once by Node, and then
+Payload's real `generateTypes` and `migrate` run against that config. Same
+output, same code, no double load.
+
+One thing is deliberately not in that script: `generate:importmap`. `next dev`
+regenerates `src/app/(payload)/admin/importMap.js` on boot, so add a component,
+boot dev, and commit the regenerated file. Never hand-write it — a hand-written
+version silently omitted 23 richtext-lexical and 5 plugin-seo entries.
+
+Postgres is reached over TLS, so the `migrate*` commands need a shell with real
+network access to the Neon host.
 
 ## Design system
 

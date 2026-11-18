@@ -10,9 +10,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "payload": "payload",
-    "generate:types": "payload generate:types",
-    "generate:importmap": "payload generate:importmap"
+    "generate:types": "node scripts/payload.mjs generate:types",
+    "migrate": "node scripts/payload.mjs migrate",
+    "migrate:create": "node scripts/payload.mjs migrate:create",
+    "migrate:status": "node scripts/payload.mjs migrate:status",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.93.0",
@@ -37,6 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.12",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "typescript": "^5"
