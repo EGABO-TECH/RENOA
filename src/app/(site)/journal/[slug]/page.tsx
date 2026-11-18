@@ -4,10 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RichText } from "@/components/RichText";
+import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ShareLinks } from "@/components/site/ShareLinks";
 import { Badge, Card, Container, Grid, Section, SectionHeader, Stack } from "@/components/ui";
 import { getPost, getPosts, getSiteSettings, getSlugs } from "@/lib/cms";
+import { articleJsonLd } from "@/lib/jsonld";
 import { imageFrom, populated, populatedList } from "@/lib/media";
 import {
   POST_TYPE,
@@ -121,6 +123,8 @@ export default async function PostPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd data={articleJsonLd(post, settings)} />
+
       <Section size="lg">
         <Container width="text">
           <Stack gap={5}>

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 
+import { convertLexicalToPlaintext } from "@payloadcms/richtext-lexical/plaintext";
+
 import { Blocks } from "@/components/blocks/Blocks";
 import { EmptyState, FAQList } from "@/components/site/Bits";
+import { JsonLd } from "@/components/site/JsonLd";
 import { Button, Card, Container, Section, SectionHeader, Stack } from "@/components/ui";
 import { getFAQs, getPage, getServices, getSiteSettings } from "@/lib/cms";
+import { faqJsonLd } from "@/lib/jsonld";
 import { buildMetadata, routes } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,8 +43,21 @@ export default async function FAQPage() {
     getSiteSettings(),
   ]);
 
+  // The answers are rich text for readers; the structured data needs the same
+  // words as plain text. Google's own guidance is that the markup matches what
+  // is on the page, so this converts the rendered field rather than carrying a
+  // second, hand-written copy of each answer.
+  const faqData = faqJsonLd(
+    faqs.map((faq) => ({
+      question: faq.question,
+      answer: convertLexicalToPlaintext({ data: faq.answer }),
+    })),
+  );
+
   return (
     <>
+      <JsonLd data={faqData} />
+
       <Section size="lg">
         <Container width="text">
           <SectionHeader

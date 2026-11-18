@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 
 import { Blocks } from "@/components/blocks/Blocks";
 import { EmptyState } from "@/components/site/Bits";
+import { JsonLd } from "@/components/site/JsonLd";
 import { Section } from "@/components/ui";
 import { getHomepage, getSiteSettings } from "@/lib/cms";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import { buildMetadata } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,19 +22,27 @@ export async function generateMetadata(): Promise<Metadata> {
  * of imports that only a developer could change.
  */
 export default async function HomePage() {
-  const homepage = await getHomepage();
+  const [homepage, settings] = await Promise.all([getHomepage(), getSiteSettings()]);
   const sections = homepage.sections ?? [];
 
-  if (sections.length === 0) {
-    return (
-      <Section>
-        <EmptyState>
-          The homepage has no sections yet. Add them under Site → Homepage in the
-          admin; each one can be reordered and hidden without a deploy.
-        </EmptyState>
-      </Section>
-    );
-  }
+  return (
+    <>
+      {/* The Organization node carries an @id the Person and Article nodes on
+          other pages point back at, so a crawler links the studio to its
+          people rather than treating each page as unrelated. */}
+      <JsonLd data={organizationJsonLd(settings)} />
+      <JsonLd data={websiteJsonLd(settings)} />
 
-  return <Blocks sections={sections} />;
+      {sections.length === 0 ? (
+        <Section>
+          <EmptyState>
+            The homepage has no sections yet. Add them under Site → Homepage in the
+            admin; each one can be reordered and hidden without a deploy.
+          </EmptyState>
+        </Section>
+      ) : (
+        <Blocks sections={sections} />
+      )}
+    </>
+  );
 }

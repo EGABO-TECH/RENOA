@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
 import { ResultList, TestimonialCard } from "@/components/site/Bits";
+import { JsonLd } from "@/components/site/JsonLd";
 import { MemberCard } from "@/components/site/MemberCard";
 import { PostCard } from "@/components/site/PostCard";
 import { Badge, Button, Grid, Section, SectionHeader, Stack } from "@/components/ui";
@@ -14,6 +15,7 @@ import {
   getSlugs,
   getTestimonials,
 } from "@/lib/cms";
+import { projectJsonLd } from "@/lib/jsonld";
 import { imageFrom, populatedList } from "@/lib/media";
 import {
   PROJECT_CATEGORY,
@@ -61,9 +63,10 @@ export default async function ProjectPage({ params }: Params) {
   const project = await getProject(slug);
   if (!project) notFound();
 
-  const [posts, testimonials] = await Promise.all([
+  const [posts, testimonials, settings] = await Promise.all([
     getPostsByProject(project.id),
     getTestimonials(project.id),
+    getSiteSettings(),
   ]);
 
   const contributors = populatedList<TeamMember>(project.contributors);
@@ -76,6 +79,8 @@ export default async function ProjectPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd data={projectJsonLd(project, settings)} />
+
       <Section size="lg">
         <Stack gap={5}>
           <Stack row gap={2} align="center">

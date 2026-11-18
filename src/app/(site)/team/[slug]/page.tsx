@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
+import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ProjectCard } from "@/components/site/ProjectCard";
 import { Badge, Button, Grid, Section, SectionHeader, Stack } from "@/components/ui";
@@ -13,6 +14,7 @@ import {
   getSlugs,
   getTeamMember,
 } from "@/lib/cms";
+import { personJsonLd } from "@/lib/jsonld";
 import { imageFrom } from "@/lib/media";
 import { FUNCTION_GROUP, buildMetadata, memberMailto, routes } from "@/lib/site";
 
@@ -69,6 +71,8 @@ export default async function MemberPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd data={personJsonLd(member, settings)} />
+
       <Section size="lg">
         <div className="grid grid-cols-1 gap-[var(--s-6)] md:grid-cols-[18rem_1fr] md:items-start">
           {photo ? (
