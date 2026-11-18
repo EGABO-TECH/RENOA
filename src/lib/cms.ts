@@ -87,6 +87,11 @@ const findOneBySlug = async <T>(
  * sections 3 and 4 of the brief. Nothing here invents a fact about RENOA, and
  * `whatsappNumber` in particular stays empty — section 9 is explicit that an
  * absent number means no button, never a placeholder one.
+ *
+ * The one addition to the brief's nav list is Home, which the team asked for
+ * on 2026-11-19. The wordmark already links to `/`, but that is a convention a
+ * reader has to know rather than see, and it is the least discoverable control
+ * in the header on a phone, where the wordmark sits next to a menu button.
  */
 const withSettingsDefaults = (settings: Partial<SiteSetting>): SiteSetting =>
   ({
@@ -102,6 +107,7 @@ const withNavigationDefaults = (navigation: Partial<Navigation>): Navigation => 
     navigation.headerLinks && navigation.headerLinks.length > 0
       ? navigation.headerLinks
       : [
+          { label: "Home", url: "/", order: 0 },
           { label: "Services", url: "/services", order: 1 },
           { label: "Work", url: "/work", order: 2 },
           { label: "Team", url: "/team", order: 3 },
