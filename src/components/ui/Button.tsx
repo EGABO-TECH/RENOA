@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
+import { hrefKind, opensNewTab } from "@/lib/href";
 
 const BASE =
   "inline-flex items-center justify-center gap-[var(--s-2)] rounded-md border font-sans font-semibold leading-none whitespace-nowrap no-underline " +
@@ -88,20 +89,29 @@ export function Button(props: ButtonProps | ButtonLinkProps) {
       ...anchorProps
     } = props;
 
-    const external = /^(https?:|mailto:|tel:)/.test(href);
+    const kind = hrefKind(href);
 
-    if (external) {
+    if (kind === "external") {
       return (
         <a
           {...anchorProps}
           href={href}
           className={classes}
-          {...(href.startsWith("http")
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : {})}
+          {...(opensNewTab(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         >
           {children}
         </a>
+      );
+    }
+
+    // An href from the CMS that is neither a path nor a URL is a placeholder,
+    // and `next/link` throws on one (src/lib/href.ts). It renders as a dead
+    // button rather than taking the page down with it.
+    if (kind === "placeholder") {
+      return (
+        <span className={classes} aria-disabled="true" role="link">
+          {children}
+        </span>
       );
     }
 

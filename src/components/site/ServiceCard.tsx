@@ -10,13 +10,25 @@ import type { Service } from "@/payload-types";
  * works against the performance bar in section 9, and the title already says
  * what the service is. The field stays in the CMS for the admin's own lists.
  */
-export function ServiceCard({ service }: { service: Service }) {
+export function ServiceCard({
+  service,
+  /**
+   * The card title's heading level. h3 suits a card sitting under a section
+   * heading, which is where most of them are; the services index has nothing
+   * between the page h1 and the grid, so it passes h2 rather than leaving a
+   * level skipped (WCAG 2.2 AA, semantic headings).
+   */
+  level = "h3",
+}: {
+  service: Service;
+  level?: "h2" | "h3";
+}) {
   const deliverables = (service.deliverables ?? []).slice(0, 3);
 
   return (
     <Card href={routes.service(service.slug)}>
       <Stack gap={3}>
-        <CardHeader title={service.title} />
+        <CardHeader title={service.title} level={level} />
         <p className="t-small text-muted m-0">{service.summary}</p>
 
         {deliverables.length > 0 ? (

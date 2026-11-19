@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Container } from "@/components/ui";
+import { hrefKind, opensNewTab } from "@/lib/href";
 import { routes, whatsappUrl } from "@/lib/site";
 import type { Navigation, SiteSetting } from "@/payload-types";
 
@@ -8,16 +9,27 @@ const ExternalOrInternal = ({ href, children }: { href: string; children: string
   const classes =
     "text-muted no-underline text-[length:var(--t-small)] hover:text-ink transition-colors duration-[var(--dur-1)] ease-[var(--ease)]";
 
-  if (/^(https?:|mailto:|tel:)/.test(href)) {
-    const external = href.startsWith("http");
+  const kind = hrefKind(href);
+
+  if (kind === "external") {
     return (
       <a
         href={href}
         className={classes}
-        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        {...(opensNewTab(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       >
         {children}
       </a>
+    );
+  }
+
+  // A placeholder — `[TODO: RENOA GitHub org URL]`, say — is text, not a
+  // destination. See src/lib/href.ts for why this case exists at all.
+  if (kind === "placeholder") {
+    return (
+      <span className={`${classes} cursor-default`} title="Not set yet">
+        {children}
+      </span>
     );
   }
 

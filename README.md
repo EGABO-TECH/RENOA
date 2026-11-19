@@ -69,7 +69,10 @@ The public site runs at `http://localhost:3000` and the admin at
 | `npm run build` | Production build |
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint |
+| `npm run seed` | Seed the team, services, projects, FAQs and the journal drafts (idempotent) |
+| `npm run audit:a11y` | Structural accessibility check over the running site |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` from the Payload config |
+| `npm run generate:importmap` | Rewrite the admin import map after adding a custom component |
 | `npm run migrate:create <name>` | Write a migration from the current schema |
 | `npm run migrate` / `migrate:status` | Apply / inspect migrations |
 | `npm run check:contrast` | WCAG 2.2 AA check on the design tokens |
@@ -88,10 +91,12 @@ every dependency left external so each package is loaded once by Node, and then
 Payload's real `generateTypes` and `migrate` run against that config. Same
 output, same code, no double load.
 
-One thing is deliberately not in that script: `generate:importmap`. `next dev`
-regenerates `src/app/(payload)/admin/importMap.js` on boot, so add a component,
-boot dev, and commit the regenerated file. Never hand-write it — a hand-written
-version silently omitted 23 richtext-lexical and 5 plugin-seo entries.
+`generate:importmap` is in there too. A `next dev` boot used to rewrite
+`src/app/(payload)/admin/importMap.js` by itself and no longer does, which left
+a newly added field component unresolvable in the admin. Run it after adding
+any custom admin component and commit the result. Never hand-write that file —
+a hand-written version silently omitted 23 richtext-lexical and 5 plugin-seo
+entries.
 
 Postgres is reached over TLS, so the `migrate*` commands need a shell with real
 network access to the Neon host.
@@ -178,6 +183,41 @@ and `/pricing` — are 301s to `/team`, `/journal`, `/work` and `/services`.
 `next build` prerenders these pages, so the build needs `DATABASE_URL` to
 point at a reachable Postgres. A build with the database down fails rather
 than publishing an empty site.
+
+## Accessibility
+
+Two checks run from the repo, and both are part of finishing a change that
+touches the UI:
+
+```sh
+npm run check:contrast   # every token pair against WCAG 2.2 AA
+npm run audit:a11y       # the rendered pages, against a running dev server
+```
+
+`audit:a11y` fetches every public route and checks what markup can answer for:
+one `h1` per page, no skipped heading levels, an `alt` on every image, an
+accessible name on every link and control, a label for every form field, a
+`main` landmark, a skip link, a document language and a title.
+
+One route is a recorded exception. `src/app/global-not-found.tsx` serves any
+URL that matches no route at all, as a complete server-rendered document —
+Next's own convention for an app with two root layouts, which this one has, so
+there is no single layout a global 404 could be composed from. A URL that
+*does* match a dynamic route and then calls `notFound()` is different: Next
+cannot compose a document there either, so it streams the not-found UI to the
+client. The status code is right and a browser shows the styled page, but the
+first bytes are an empty shell, which the audit reports as `known` rather than
+pretending it passes.
+
+A clean run is a floor, not a pass. These still need a person and a browser:
+
+- Focus visibility, and tab order through the header, the mobile menu and both
+  forms.
+- `prefers-reduced-motion`, which should stop the animation rather than shorten
+  it.
+- Screen reader passes over the two forms, including an error state.
+- Zoom to 200% and 400%, where the layout must not scroll horizontally.
+- Lighthouse on mobile, for the 90+ bar in section 9 of the brief.
 
 ## Roles
 

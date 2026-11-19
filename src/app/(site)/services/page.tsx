@@ -48,7 +48,7 @@ export default async function ServicesPage() {
         {services.length > 0 ? (
           <Grid cols={3} gap={4}>
             {services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceCard key={service.id} service={service} level="h2" />
             ))}
           </Grid>
         ) : (

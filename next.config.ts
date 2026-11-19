@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   experimental: {
+    /**
+     * Enables `src/app/global-not-found.tsx`. The app has two root layouts,
+     * one per route group, so there is no single layout Next can compose a
+     * global 404 from — this is the convention it documents for that case.
+     */
+    globalNotFound: true,
+
     serverActions: {
       /**
        * The application form posts a CV with the rest of the fields, and a

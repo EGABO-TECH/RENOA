@@ -16,9 +16,15 @@ import type { Project } from "@/payload-types";
 export function ProjectCard({
   project,
   priority = false,
+  /**
+   * h3 under a section heading, h2 where the grid follows the page h1
+   * directly — the work index — so no heading level is skipped.
+   */
+  level = "h3",
 }: {
   project: Project;
   priority?: boolean;
+  level?: "h2" | "h3";
 }) {
   const cover = imageFrom(project.gallery?.[0]?.image, "card");
   const status = PROJECT_STATUS[project.status] ?? project.status;
@@ -41,6 +47,7 @@ export function ProjectCard({
         <CardHeader
           eyebrow={PROJECT_CATEGORY[project.category] ?? undefined}
           title={project.title}
+          level={level}
         />
         <p className="t-small text-muted m-0">{project.summary}</p>
         <div>

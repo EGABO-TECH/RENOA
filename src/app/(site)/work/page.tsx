@@ -81,7 +81,7 @@ export default async function WorkPage({ searchParams }: Search) {
         {projects.length > 0 ? (
           <Grid cols={3} gap={4}>
             {projects.map((project, index) => (
-              <ProjectCard key={project.id} project={project} priority={index < 3} />
+              <ProjectCard key={project.id} project={project} priority={index < 3} level="h2" />
             ))}
           </Grid>
         ) : (
