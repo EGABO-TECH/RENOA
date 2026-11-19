@@ -15,6 +15,7 @@
     "migrate": "node scripts/payload.mjs migrate",
     "migrate:create": "node scripts/payload.mjs migrate:create",
     "migrate:status": "node scripts/payload.mjs migrate:status",
+    "seed": "node scripts/seed.mjs",
     "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
