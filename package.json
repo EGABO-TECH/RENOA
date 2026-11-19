@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "generate:types": "node scripts/payload.mjs generate:types",
+    "generate:importmap": "node scripts/payload.mjs generate:importmap",
     "migrate": "node scripts/payload.mjs migrate",
     "migrate:create": "node scripts/payload.mjs migrate:create",
     "migrate:status": "node scripts/payload.mjs migrate:status",

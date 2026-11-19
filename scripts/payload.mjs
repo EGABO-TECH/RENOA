@@ -2,6 +2,7 @@
  * Runs Payload's own tooling without the broken `payload` CLI.
  *
  *   node scripts/payload.mjs generate:types
+ *   node scripts/payload.mjs generate:importmap
  *   node scripts/payload.mjs migrate:create <name>
  *   node scripts/payload.mjs migrate | migrate:status | migrate:down | ...
  *
@@ -19,9 +20,13 @@
  * Payload's bin modules by absolute file URL because its package exports map
  * does not expose ./dist/bin/*.
  *
- * Not handled here: generate:importmap. `next dev` regenerates
- * src/app/(payload)/admin/importMap.js correctly on boot, so add a component,
- * boot dev, and commit the regenerated file. Never hand-write it.
+ * generate:importmap is handled here too, since 2026-11-19. The note that
+ * used to stand in its place said to boot `next dev` and let it rewrite
+ * src/app/(payload)/admin/importMap.js — that was true on 2026-11-15 and is
+ * not now: a dev boot with a new field component left the file untouched,
+ * so the admin would have rendered RepoPicker as a missing component. This
+ * calls Payload's own generator, which is still the rule the old note was
+ * protecting: never hand-write that file.
  */
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -105,6 +110,16 @@ if (command === "generate:types") {
   // bundle's directory here, so state the real target instead.
   process.env.PAYLOAD_TS_OUTPUT_PATH = path.join(root, "src/payload-types.ts");
   await generateTypes(config, { log: true });
+  process.exit(0);
+}
+
+if (command === "generate:importmap") {
+  const { generateImportMap } = await bin("generateImportMap/index.js");
+  // Both paths this resolves — where to write, and what the component
+  // specifiers are relative to — come from the real project root rather than
+  // the bundle's directory, which is why ROOT_DIR is pinned.
+  process.env.ROOT_DIR = root;
+  await generateImportMap(config, { log: true });
   process.exit(0);
 }
 
