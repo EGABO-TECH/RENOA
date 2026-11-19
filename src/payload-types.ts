@@ -234,14 +234,9 @@ export interface TeamMember {
    */
   githubUsername?: string | null;
   /**
-   * Repo names to surface on the profile. Fetched server-side and cached 24h.
+   * Repos to surface on the profile, in this order. Fetched server-side and cached 24h.
    */
-  featuredRepos?:
-    | {
-        repo: string;
-        id?: string | null;
-      }[]
-    | null;
+  featuredRepos?: string[] | null;
   linkedinUrl?: string | null;
   /**
    * Personal address for the Message button. Falls back to the shared inbox when empty.
@@ -1191,12 +1186,7 @@ export interface TeamMembersSelect<T extends boolean = true> {
         id?: T;
       };
   githubUsername?: T;
-  featuredRepos?:
-    | T
-    | {
-        repo?: T;
-        id?: T;
-      };
+  featuredRepos?: T;
   linkedinUrl?: T;
   email?: T;
   displayOrder?: T;

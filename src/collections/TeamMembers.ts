@@ -72,12 +72,19 @@ export const TeamMembers: CollectionConfig = {
         },
         {
           name: "featuredRepos",
-          type: "array",
-          labels: { singular: "Repo", plural: "Repos" },
-          fields: [{ name: "repo", type: "text", required: true }],
+          type: "text",
+          hasMany: true,
+          label: "Featured repositories",
           admin: {
-            initCollapsed: true,
-            description: "Repo names to surface on the profile. Fetched server-side and cached 24h.",
+            description:
+              "Repos to surface on the profile, in this order. Fetched server-side and cached 24h.",
+            // A picker that lists this member's public repositories to tick,
+            // rather than asking anyone to type a repo name exactly right
+            // (brief section 8). It falls back to plain text entry when no
+            // GITHUB_TOKEN is configured, so the field always works.
+            components: {
+              Field: "@/components/admin/RepoPicker#RepoPicker",
+            },
           },
         },
       ],

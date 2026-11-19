@@ -22,6 +22,8 @@ import { Applications } from "@/collections/Applications";
 import { Inquiries } from "@/collections/Inquiries";
 import { Pages } from "@/collections/Pages";
 
+import { hasGitHubToken, listPublicRepos } from "@/lib/github";
+
 import { SiteSettings } from "@/globals/SiteSettings";
 import { Navigation } from "@/globals/Navigation";
 import { Homepage } from "@/globals/Homepage";
@@ -74,6 +76,45 @@ export default buildConfig({
   ],
 
   globals: [SiteSettings, Navigation, Homepage],
+
+  /**
+   * Lists a GitHub login's public repositories for the admin's repo picker.
+   *
+   * It lives on the Payload config rather than as a route under `src/app`
+   * because Payload already owns every path under `/api`. Mounting it here
+   * also means it inherits Payload's auth: `req.user` is the signed-in admin
+   * user, and an anonymous request gets nothing. The token never leaves the
+   * server either way.
+   */
+  endpoints: [
+    {
+      path: "/github/repos",
+      method: "get",
+      handler: async (req) => {
+        if (!req.user) {
+          return Response.json({ error: "Not authorised." }, { status: 401 });
+        }
+
+        const username = String(req.query?.username ?? "").trim();
+        if (!username) {
+          return Response.json({ error: "No username given." }, { status: 400 });
+        }
+
+        if (!hasGitHubToken()) {
+          // A real state, not an error: the token is still outstanding. The
+          // picker shows this message and falls back to typing repo names.
+          return Response.json({ repos: null, reason: "no-token" });
+        }
+
+        const repos = await listPublicRepos(username);
+        if (!repos) {
+          return Response.json({ repos: null, reason: "unavailable" });
+        }
+
+        return Response.json({ repos });
+      },
+    },
+  ],
 
   editor: lexicalEditor({}),
 

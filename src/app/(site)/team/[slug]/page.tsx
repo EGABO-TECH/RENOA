@@ -6,6 +6,7 @@ import { RichText, hasRichText } from "@/components/RichText";
 import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ProjectCard } from "@/components/site/ProjectCard";
+import { RepoList } from "@/components/site/RepoList";
 import { Badge, Button, Grid, Section, SectionHeader, Stack } from "@/components/ui";
 import {
   getPostsByMember,
@@ -138,21 +139,7 @@ export default async function MemberPage({ params }: Params) {
       {repos.length > 0 && member.githubUsername ? (
         <Section divider>
           <SectionHeader title="Featured repositories" />
-          <ul className="flex list-none flex-wrap gap-[var(--s-2)] p-0 m-0">
-            {repos.map((entry) => (
-              <li key={entry.id ?? entry.repo}>
-                <a
-                  href={`https://github.com/${member.githubUsername}/${entry.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex rounded-[var(--r-md)] border border-line px-[var(--s-3)] py-[var(--s-2)] no-underline transition-colors duration-[var(--dur-1)] ease-[var(--ease)] hover:border-brand"
-                >
-                  {/* Mono: a repository name is machine data. */}
-                  <span className="t-mono text-ink">{entry.repo}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <RepoList username={member.githubUsername} repoNames={repos} />
         </Section>
       ) : null}
 

@@ -45,22 +45,36 @@ const bin = (file) =>
 process.loadEnvFile?.(path.join(root, ".env"));
 
 /**
- * The collections import `next/cache` for their revalidation hooks. That
- * module only resolves under Next's own bundler conditions, so leaving it
- * external makes Node fail with ERR_MODULE_NOT_FOUND on `next/cache`. Neither
- * of these commands serves a page, so there is nothing to revalidate: the
- * cache hints become no-ops.
+ * Modules that only work inside Next's own bundler, reached from the config
+ * through the collections:
+ *
+ * - `next/cache`, imported by the revalidation hooks. Left external, Node
+ *   cannot resolve it at all (ERR_MODULE_NOT_FOUND). Neither of these
+ *   commands serves a page, so there is nothing to revalidate.
+ * - `server-only`, imported by the GitHub client as a guard. Outside a React
+ *   Server Component build it throws on import by design — that is the whole
+ *   point of the package — so here it has to be the no-op it resolves to
+ *   under the `react-server` condition.
+ *
+ * Both become stubs. Neither has any bearing on the schema these commands
+ * read.
  */
-const stubNextCache = {
-  name: "stub-next-cache",
+const stubNextOnlyModules = {
+  name: "stub-next-only-modules",
   setup(build) {
     build.onResolve({ filter: /^next\/cache$/ }, () => ({
       path: "next-cache",
       namespace: "stub",
     }));
-    build.onLoad({ filter: /.*/, namespace: "stub" }, () => ({
+    build.onResolve({ filter: /^server-only$/ }, () => ({
+      path: "server-only",
+      namespace: "stub",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "stub" }, ({ path: id }) => ({
       contents:
-        "export const revalidatePath = () => {};\nexport const revalidateTag = () => {};\n",
+        id === "next-cache"
+          ? "export const revalidatePath = () => {};\nexport const revalidateTag = () => {};\n"
+          : "export {};\n",
       loader: "js",
     }));
   },
@@ -79,7 +93,7 @@ await esbuild.build({
   packages: "external",
   alias: { "@": path.join(root, "src") },
   loader: { ".scss": "empty", ".css": "empty" },
-  plugins: [stubNextCache],
+  plugins: [stubNextOnlyModules],
   logLevel: "warning",
 });
 
