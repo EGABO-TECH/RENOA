@@ -24,6 +24,7 @@ export const routes = {
   careers: "/careers",
   job: (slug: string) => `/careers/${slug}`,
   contact: "/contact",
+  thankYou: "/thank-you",
   page: (slug: string) => `/${slug}`,
 } as const;
 

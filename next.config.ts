@@ -4,6 +4,19 @@ import { withPayload } from "@payloadcms/next/withPayload";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  experimental: {
+    serverActions: {
+      /**
+       * The application form posts a CV with the rest of the fields, and a
+       * Server Action body is capped at 1MB by default. The action itself
+       * rejects anything over 4MB with a message; this leaves room for that
+       * check to be the one that runs, rather than the request dying at the
+       * framework with no explanation.
+       */
+      bodySizeLimit: "5mb",
+    },
+  },
+
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [],
@@ -25,12 +38,18 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              // challenges.cloudflare.com: the Turnstile widget on the two
+              // public forms. It is loaded only when a site key is set, but
+              // the header is static, so it is always allowed for.
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               // blob: for Vercel Blob media; https: for the storage CDN.
               "img-src 'self' data: blob: https:",
-              "connect-src 'self'",
+              "connect-src 'self' https://challenges.cloudflare.com",
+              // Turnstile renders in an iframe, and the contact page embeds
+              // the Cal.com booking page in one.
+              "frame-src 'self' https://challenges.cloudflare.com https://cal.com https://app.cal.com",
               "frame-ancestors 'none'",
             ].join("; "),
           },

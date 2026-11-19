@@ -217,3 +217,54 @@ export function SelectField({
     </Shell>
   );
 }
+
+export type FileFieldProps = FieldShell &
+  Omit<InputHTMLAttributes<HTMLInputElement>, "className" | "id" | "type">;
+
+/**
+ * A file input.
+ *
+ * The native control is kept — a custom one would have to re-implement the
+ * file picker, the chosen-file name and the keyboard behaviour that every
+ * browser already gets right — and only its button is restyled, through
+ * `::file-selector-button`.
+ */
+export function FileField({
+  label,
+  hint,
+  error,
+  required,
+  className,
+  ...input
+}: FileFieldProps) {
+  const base = useId();
+  const id = input.name ? `f-${input.name}` : base;
+
+  return (
+    <Shell
+      label={label}
+      hint={hint}
+      error={error}
+      required={required}
+      className={className}
+      controlId={id}
+      describedBy={id}
+    >
+      <input
+        {...input}
+        type="file"
+        id={id}
+        required={required}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+        className={cn(
+          CONTROL,
+          "py-[var(--s-2)] leading-[2]",
+          "file:mr-[var(--s-3)] file:h-8 file:cursor-pointer file:rounded-sm file:border file:border-line-strong",
+          "file:bg-paper-sub file:px-[var(--s-3)] file:text-[length:var(--t-micro)] file:font-medium file:text-ink",
+          "hover:file:border-brand",
+        )}
+      />
+    </Shell>
+  );
+}

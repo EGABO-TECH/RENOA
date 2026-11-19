@@ -1,46 +1,76 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 
-export default function ThankYouPage() {
+import { Button, Container, Section, Stack } from "@/components/ui";
+import { getSiteSettings } from "@/lib/cms";
+import { routes, whatsappUrl } from "@/lib/site";
+
+/**
+ * Where both forms land.
+ *
+ * Rebuilt on the design system in phase 4. What was here before was written
+ * by hand against the old palette: a hardcoded `#fdfdfd` page that ignored
+ * dark mode, the placeholder WhatsApp number section 9 asks us to remove, and
+ * a `hello@renoa.tech` address that is not the one in Site Settings. All
+ * three are now read from the CMS or gone.
+ *
+ * The wording follows the form that was submitted, because "we will reply
+ * within a working day" is the right promise for an inquiry and the wrong one
+ * for a job application.
+ */
+
+export const metadata: Metadata = {
+  title: "Thank you",
+  // Nothing to index: it is the far side of a form, and it should never turn
+  // up in search results on its own.
+  robots: { index: false, follow: true },
+};
+
+const COPY = {
+  inquiry: {
+    title: "Thank you for reaching out.",
+    body: "We have your note and will reply within one working day. If it is urgent, WhatsApp is faster.",
+  },
+  application: {
+    title: "Thank you for applying.",
+    body: "We read every application ourselves and reply either way, usually within a week.",
+  },
+} as const;
+
+type Params = { searchParams: Promise<{ sent?: string }> };
+
+export default async function ThankYouPage({ searchParams }: Params) {
+  const [{ sent }, settings] = await Promise.all([searchParams, getSiteSettings()]);
+
+  const copy = sent === "application" ? COPY.application : COPY.inquiry;
+  const whatsapp = whatsappUrl(
+    settings,
+    `Hello ${settings.siteName}, I just submitted a form on the website.`,
+  );
+
   return (
-    <div className="min-h-screen bg-[#fdfdfd] flex items-center justify-center px-4">
-      <div className="text-center max-w-xl">
-        <div className="mb-8 flex justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#EAF2FF] border border-[var(--accent)]/20">
-            <svg className="w-10 h-10 text-[var(--accent)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-        </div>
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] font-mono">
-          MESSAGE RECEIVED
-        </span>
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-[#111]">
-          Thank you for reaching out.
-        </h1>
-        <p className="mt-4 text-base text-[var(--text-secondary)] leading-relaxed">
-          A member of our engineering team will reply within one business day. For urgent matters,
-          reach us directly on WhatsApp.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--accent)] px-7 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
-          >
-            Back to home
-          </Link>
-          <a
-            href="https://wa.me/256700000000?text=Hi%20RENOA%2C%20I%20just%20submitted%20an%20inquiry."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#2563EB] bg-[#2563EB]/10 px-7 text-sm font-medium text-[#2563EB] transition-colors hover:bg-[#2563EB]/20"
-          >
-            Chat on WhatsApp
-          </a>
-        </div>
-        <p className="mt-10 text-xs text-[#9ca3af] font-mono">
-          hello@renoa.tech · Kampala, Uganda
-        </p>
-      </div>
-    </div>
+    <Section size="lg">
+      <Container width="text">
+        <Stack gap={5} align="start">
+          <h1 className="t-h1 m-0">{copy.title}</h1>
+          <p className="t-lede text-muted m-0">{copy.body}</p>
+
+          <Stack row gap={3}>
+            <Button href={routes.home}>Back to home</Button>
+            {whatsapp ? (
+              <Button href={whatsapp} variant="secondary">
+                Message us on WhatsApp
+              </Button>
+            ) : null}
+          </Stack>
+
+          <p className="t-small text-faint m-0">
+            <a href={`mailto:${settings.contactEmail}`} className="text-brand">
+              {settings.contactEmail}
+            </a>
+            {settings.address ? ` · ${settings.address.split("\n")[0]}` : null}
+          </p>
+        </Stack>
+      </Container>
+    </Section>
   );
 }

@@ -17,6 +17,8 @@ export {
 export { Card, CardHeader, type CardHeaderProps, type CardProps } from "./Card";
 export { Container, type ContainerProps } from "./Container";
 export {
+  FileField,
+  type FileFieldProps,
   SelectField,
   type SelectFieldProps,
   TextAreaField,

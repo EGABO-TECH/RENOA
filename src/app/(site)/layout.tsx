@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
 
+import { Analytics } from "@/components/site/Analytics";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 import { BookCallBar } from "@/components/site/BookCallBar";
 import { DraftBanner } from "@/components/site/DraftBanner";
@@ -99,6 +100,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
             <SiteFooter navigation={navigation} settings={settings} />
             <BookCallBar navigation={navigation} />
+            <Analytics />
           </>
         )}
       </body>

@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
-import { Badge, Button, Card, Container, Section, Stack } from "@/components/ui";
+import { ApplicationForm } from "@/components/site/ApplicationForm";
+import { Turnstile } from "@/components/site/Turnstile";
+import { Badge, Button, Card, Container, Section, SectionHeader, Stack } from "@/components/ui";
 import { getJob, getSiteSettings, getSlugs } from "@/lib/cms";
 import { JOB_TYPE, buildMetadata, formatDate, isoDate, routes } from "@/lib/site";
+import { turnstileSiteKey } from "@/lib/spam";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -31,11 +34,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 /**
  * One role: what it is, what it asks for, and how to apply.
  *
- * Applying is an email for now. The application form writes to the
- * Applications collection and needs the spam protection and the email alerts
- * that phase 4 brings — a form that quietly drops a CV, or that invites every
- * bot on the internet into the admin, would be worse than an address that
- * works today.
+ * The form writes to the Applications collection through a Server Action,
+ * with the honeypot, timing, rate limit and Turnstile checks in
+ * `src/lib/spam.ts` in front of it, and an email alert to the team behind it.
+ * Email stays on the page beside it: an application is worth more than a
+ * form, and some people will always prefer to send one.
+ *
+ * A closed role shows no form. The action re-reads the job by slug and
+ * refuses a closed one too, so replaying an old form achieves nothing.
  */
 export default async function JobPage({ params }: Params) {
   const { slug } = await params;
@@ -68,6 +74,14 @@ export default async function JobPage({ params }: Params) {
                 Applications close <time dateTime={isoDate(job.closingDate)}>{closes}</time>
               </p>
             ) : null}
+
+            {/* The description can run long on a phone; this puts the form
+                one tap away without duplicating it. */}
+            {job.isOpen ? (
+              <Button href="#apply" size="lg">
+                Apply for this role
+              </Button>
+            ) : null}
           </Stack>
         </Container>
       </Section>
@@ -84,19 +98,7 @@ export default async function JobPage({ params }: Params) {
               </div>
             ) : null}
 
-            {job.isOpen ? (
-              <Card tone="sub">
-                <Stack gap={3} align="start">
-                  <h2 className="t-h4 m-0">How to apply</h2>
-                  <p className="t-small text-muted m-0">
-                    Send a CV and a short note about something you have finished.
-                  </p>
-                  <Button href={`mailto:${settings.contactEmail}?subject=${subject}`}>
-                    Apply by email
-                  </Button>
-                </Stack>
-              </Card>
-            ) : (
+            {job.isOpen ? null : (
               <Card tone="sub">
                 <Stack gap={2}>
                   <h2 className="t-h4 m-0">This role is closed</h2>
@@ -109,6 +111,34 @@ export default async function JobPage({ params }: Params) {
           </Stack>
         </Container>
       </Section>
+
+      {job.isOpen ? (
+        <Section id="apply" tone="sub" divider>
+          <Container width="text">
+            <Stack gap={6}>
+              <SectionHeader
+                title="Apply"
+                level="h2"
+                lede="A CV helps, and a link to something you finished helps more."
+              />
+
+              <ApplicationForm slug={job.slug} jobTitle={job.title}>
+                <Turnstile siteKey={turnstileSiteKey()} />
+              </ApplicationForm>
+
+              <p className="t-small text-muted m-0">
+                Would rather email?{" "}
+                <a
+                  href={`mailto:${settings.contactEmail}?subject=${subject}`}
+                  className="text-brand"
+                >
+                  {settings.contactEmail}
+                </a>
+              </p>
+            </Stack>
+          </Container>
+        </Section>
+      ) : null}
     </>
   );
 }
