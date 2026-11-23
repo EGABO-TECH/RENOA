@@ -4,12 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RichText } from "@/components/RichText";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ShareLinks } from "@/components/site/ShareLinks";
 import { Badge, Card, Container, Grid, Section, SectionHeader, Stack } from "@/components/ui";
 import { getPost, getPosts, getSiteSettings, getSlugs } from "@/lib/cms";
-import { articleJsonLd } from "@/lib/jsonld";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/jsonld";
 import { imageFrom, populated, populatedList } from "@/lib/media";
 import {
   POST_TYPE,
@@ -121,13 +122,22 @@ export default async function PostPage({ params }: Params) {
 
   const shareUrl = absoluteUrl(settings, routes.post(post.slug));
 
+  const crumbs = [
+    { label: "Home", href: routes.home },
+    { label: settings.journalLabel, href: routes.journal },
+    { label: post.title },
+  ];
+
   return (
     <>
       <JsonLd data={articleJsonLd(post, settings)} />
+      <JsonLd data={breadcrumbJsonLd(crumbs, settings)} />
 
       <Section size="lg">
         <Container width="text">
           <Stack gap={5}>
+            <Breadcrumbs items={crumbs} />
+
             <Stack row gap={2} align="center">
               <Badge>{POST_TYPE[post.postType] ?? post.postType}</Badge>
               {date ? (

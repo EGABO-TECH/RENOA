@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { EmptyState } from "@/components/site/Bits";
 import { FilterBar } from "@/components/site/FilterBar";
+import { Pagination } from "@/components/site/Pagination";
 import { ProjectCard } from "@/components/site/ProjectCard";
 import { Grid, Section, SectionHeader, Stack } from "@/components/ui";
-import { getProjects, getSiteSettings } from "@/lib/cms";
+import { asPageNumber, getProjectsPage, getSiteSettings } from "@/lib/cms";
 import { PROJECT_CATEGORY, PROJECT_STATUS, buildMetadata, routes } from "@/lib/site";
 import type { Project } from "@/payload-types";
 
-type Search = { searchParams: Promise<{ category?: string; status?: string }> };
+type Search = { searchParams: Promise<{ category?: string; status?: string; page?: string }> };
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
@@ -42,13 +44,17 @@ export default async function WorkPage({ searchParams }: Search) {
   const params = await searchParams;
   const category = asCategory(params.category);
   const status = asStatus(params.status);
+  const page = asPageNumber(params.page);
 
   const [projects, settings] = await Promise.all([
-    getProjects({ category, status }),
+    getProjectsPage({ category, status }, page),
     getSiteSettings(),
   ]);
 
   const filtered = Boolean(category || status);
+
+  // Past the last page is a wrong URL, not an empty filter.
+  if (page > 1 && projects.docs.length === 0) notFound();
 
   return (
     <Section size="lg">
@@ -78,9 +84,9 @@ export default async function WorkPage({ searchParams }: Search) {
           />
         </Stack>
 
-        {projects.length > 0 ? (
+        {projects.docs.length > 0 ? (
           <Grid cols={3} gap={4}>
-            {projects.map((project, index) => (
+            {projects.docs.map((project, index) => (
               <ProjectCard key={project.id} project={project} priority={index < 3} level="h2" />
             ))}
           </Grid>
@@ -91,6 +97,14 @@ export default async function WorkPage({ searchParams }: Search) {
               : "No projects are published yet. Add them under Content → Projects in the admin."}
           </EmptyState>
         )}
+
+        <Pagination
+          basePath={routes.work}
+          page={projects.page}
+          totalPages={projects.totalPages}
+          preserve={{ category, status }}
+          label="Work pages"
+        />
       </Stack>
     </Section>
   );

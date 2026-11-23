@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isEditor } from "@/lib/access";
+import { logGlobal } from "@/lib/activity";
 import { homepageBlocks } from "@/blocks";
 import { homepagePreview } from "@/lib/preview";
 import { revalidateRoutes } from "@/lib/revalidate";
@@ -14,7 +15,7 @@ export const Homepage: GlobalConfig = {
   },
   versions: { drafts: true, max: 30 },
   access: { read: anyone, update: isEditor },
-  hooks: { afterChange: revalidateRoutes([routes.home]) },
+  hooks: { afterChange: [...revalidateRoutes([routes.home]), ...logGlobal("Homepage")] },
   fields: [
     {
       name: "sections",

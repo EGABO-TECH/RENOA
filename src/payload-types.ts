@@ -80,6 +80,9 @@ export interface Config {
     inquiries: Inquiry;
     pages: Page;
     media: Media;
+    attachments: Attachment;
+    'activity-log': ActivityLog;
+    'rate-limits': RateLimit;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +103,9 @@ export interface Config {
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    attachments: AttachmentsSelect<false> | AttachmentsSelect<true>;
+    'activity-log': ActivityLogSelect<false> | ActivityLogSelect<true>;
+    'rate-limits': RateLimitsSelect<false> | RateLimitsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -789,9 +795,9 @@ export interface Application {
   email: string;
   phone?: string | null;
   /**
-   * CV or portfolio, PDF preferred.
+   * CV or portfolio, PDF. Stored privately.
    */
-  cvFile?: (number | null) | Media;
+  cvFile?: (number | null) | Attachment;
   message?: string | null;
   stage: 'new' | 'reviewing' | 'interview' | 'offer' | 'declined';
   /**
@@ -800,6 +806,30 @@ export interface Application {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * CVs and other files sent through the public forms. Private: editors and admins only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "attachments".
+ */
+export interface Attachment {
+  id: number;
+  /**
+   * What this is and who sent it. Shown in the list.
+   */
+  label: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * Submissions from the contact form. Members have no access.
@@ -814,6 +844,10 @@ export interface Inquiry {
   phone?: string | null;
   company?: string | null;
   service?: (number | null) | Service;
+  /**
+   * Optional on the form, and often left blank. Lead qualification only.
+   */
+  budgetRange?: ('not-sure' | 'under-5k' | '5k-15k' | '15k-50k' | 'over-50k') | null;
   /**
    * When they want to start or ship.
    */
@@ -1024,6 +1058,48 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Every content change, newest first. Written automatically; it cannot be edited.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-log".
+ */
+export interface ActivityLog {
+  id: number;
+  summary: string;
+  action: 'created' | 'updated' | 'published' | 'deleted';
+  /**
+   * The collection or global that changed.
+   */
+  entity: string;
+  documentId?: string | null;
+  /**
+   * Where to open what changed.
+   */
+  adminUrl?: string | null;
+  user?: (number | null) | User;
+  /**
+   * Kept as text so the row survives the account being deleted.
+   */
+  userEmail?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limits".
+ */
+export interface RateLimit {
+  id: number;
+  /**
+   * scope:ip. Not stored anywhere else, and swept on expiry.
+   */
+  key: string;
+  count: number;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1098,6 +1174,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'attachments';
+        value: number | Attachment;
+      } | null)
+    | ({
+        relationTo: 'activity-log';
+        value: number | ActivityLog;
+      } | null)
+    | ({
+        relationTo: 'rate-limits';
+        value: number | RateLimit;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1450,6 +1538,7 @@ export interface InquiriesSelect<T extends boolean = true> {
   phone?: T;
   company?: T;
   service?: T;
+  budgetRange?: T;
   timeline?: T;
   message?: T;
   status?: T;
@@ -1651,6 +1740,50 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "attachments_select".
+ */
+export interface AttachmentsSelect<T extends boolean = true> {
+  label?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-log_select".
+ */
+export interface ActivityLogSelect<T extends boolean = true> {
+  summary?: T;
+  action?: T;
+  entity?: T;
+  documentId?: T;
+  adminUrl?: T;
+  user?: T;
+  userEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limits_select".
+ */
+export interface RateLimitsSelect<T extends boolean = true> {
+  key?: T;
+  count?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

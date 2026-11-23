@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { canUpdateTeamMember, deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { seoGroup, slugField } from "@/lib/fields";
 import { revalidateCollection, teamMemberPaths } from "@/lib/revalidate";
 import { previewConfig } from "@/lib/preview";
@@ -15,7 +16,7 @@ export const TeamMembers: CollectionConfig = {
     defaultColumns: ["fullName", "title", "functionGroup", "displayOrder", "isVisible"],
     description: "Titles and name spellings come from the build brief, not from the old site.",
   },
-  hooks: revalidateCollection(teamMemberPaths),
+  hooks: withActivityLog("Team", revalidateCollection(teamMemberPaths)),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

@@ -36,6 +36,14 @@ import { h, p, rich, ul } from "./lib/lexical.mjs";
 
 const TODO = "[TODO: confirm]";
 
+/**
+ * Mutes the activity log for every write here (`src/lib/activity.ts` reads
+ * this flag off the request context). Seeding is not editing: six hundred
+ * rows saying "Seeded" would bury the first real change made in the admin
+ * under them, and the log exists to answer "what did somebody do".
+ */
+const BULK = { disableActivityLog: true };
+
 /* ------------------------------------------------------------------ content */
 
 /**
@@ -407,12 +415,12 @@ async function upsert(collection, slug, data) {
   });
 
   if (docs[0]) {
-    const doc = await payload.update({ collection, id: docs[0].id, data: { ...data, slug } });
+    const doc = await payload.update({ collection, id: docs[0].id, data: { ...data, slug }, context: BULK });
     log(`updated ${collection}/${slug}`);
     return doc;
   }
 
-  const doc = await payload.create({ collection, data: { ...data, slug } });
+  const doc = await payload.create({ collection, data: { ...data, slug }, context: BULK });
   log(`created ${collection}/${slug}`);
   return doc;
 }
@@ -495,10 +503,10 @@ for (const [index, faq] of FAQS.entries()) {
   };
 
   if (docs[0]) {
-    await payload.update({ collection: "faqs", id: docs[0].id, data });
+    await payload.update({ collection: "faqs", id: docs[0].id, data, context: BULK });
     log(`updated faq: ${faq.question.slice(0, 48)}`);
   } else {
-    await payload.create({ collection: "faqs", data });
+    await payload.create({ collection: "faqs", data, context: BULK });
     log(`created faq: ${faq.question.slice(0, 48)}`);
   }
 }
@@ -522,7 +530,7 @@ async function fillGlobal(slug, isEmpty, data) {
     return;
   }
 
-  await payload.updateGlobal({ slug, data });
+  await payload.updateGlobal({ slug, data, context: BULK });
   log(`filled ${slug}`);
 }
 

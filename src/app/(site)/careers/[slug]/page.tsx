@@ -3,9 +3,12 @@ import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
 import { ApplicationForm } from "@/components/site/ApplicationForm";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { JsonLd } from "@/components/site/JsonLd";
 import { Turnstile } from "@/components/site/Turnstile";
 import { Badge, Button, Card, Container, Section, SectionHeader, Stack } from "@/components/ui";
 import { getJob, getSiteSettings, getSlugs } from "@/lib/cms";
+import { breadcrumbJsonLd } from "@/lib/jsonld";
 import { JOB_TYPE, buildMetadata, formatDate, isoDate, routes } from "@/lib/site";
 import { turnstileSiteKey } from "@/lib/spam";
 
@@ -51,11 +54,22 @@ export default async function JobPage({ params }: Params) {
   const closes = formatDate(job.closingDate);
   const subject = encodeURIComponent(`Application: ${job.title}`);
 
+  const crumbs = [
+    { label: "Home", href: routes.home },
+    { label: "Careers", href: routes.careers },
+    { label: job.title },
+  ];
+
   return (
     <>
+      {/* A closed role is noindex, so no trail is offered for it either. */}
+      {job.isOpen ? <JsonLd data={breadcrumbJsonLd(crumbs, settings)} /> : null}
+
       <Section size="lg">
         <Container width="text">
           <Stack gap={4}>
+            <Breadcrumbs items={crumbs} />
+
             <Stack row gap={2} align="center">
               <Badge>{JOB_TYPE[job.type] ?? job.type}</Badge>
               {job.isOpen ? (

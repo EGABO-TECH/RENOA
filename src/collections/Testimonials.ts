@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { revalidateCollection, testimonialPaths } from "@/lib/revalidate";
 
 export const Testimonials: CollectionConfig = {
@@ -10,7 +11,7 @@ export const Testimonials: CollectionConfig = {
     defaultColumns: ["personName", "organization", "verified", "relatedProject"],
     description: "Only verified testimonials render. Never attribute one to a RENOA product.",
   },
-  hooks: revalidateCollection(testimonialPaths),
+  hooks: withActivityLog("Testimonials", revalidateCollection(testimonialPaths)),
   versions: { drafts: true, maxPerDoc: 10 },
   access: { read: publishedOrLoggedIn, create: isEditor, update: isEditor, delete: deleteOnlyAdmin },
   fields: [

@@ -107,3 +107,35 @@ export const validate = (rules: Rule[]): FieldErrors => {
 
   return errors;
 };
+
+/**
+ * Budget bands on the inquiry form (brief section 5 lists `budgetRange` on
+ * Inquiries; it was the one field in that table never built).
+ *
+ * Declared here, in the one module both a Client Component and a Payload
+ * collection can import, so the options a visitor picks from and the options
+ * stored in the database cannot drift apart.
+ *
+ * Two deliberate choices. The field is **optional and always has a "rather
+ * not say" escape**: a required budget question loses the enquiry from
+ * someone who genuinely does not know yet, which on this site is most of
+ * them. And the bands are internal lead qualification, not a price list —
+ * nothing public quotes a figure, which is the decision `/pricing` folding
+ * into engagement models already made.
+ */
+export const BUDGET_RANGES = [
+  { value: "not-sure", label: "Not sure yet" },
+  { value: "under-5k", label: "Under $5,000" },
+  { value: "5k-15k", label: "$5,000 – $15,000" },
+  { value: "15k-50k", label: "$15,000 – $50,000" },
+  { value: "over-50k", label: "Over $50,000" },
+] as const;
+
+export type BudgetRange = (typeof BUDGET_RANGES)[number]["value"];
+
+/** The label for a stored value, for the alert email. */
+export const budgetLabel = (value: string): string =>
+  BUDGET_RANGES.find((band) => band.value === value)?.label ?? "";
+
+export const isBudgetRange = (value: string): value is BudgetRange =>
+  BUDGET_RANGES.some((band) => band.value === value);

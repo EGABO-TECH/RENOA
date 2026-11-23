@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getServices, getSiteSettings } from "@/lib/cms";
 import { sendAlert } from "@/lib/email";
-import { field, formError, validate } from "@/lib/forms";
+import { budgetLabel, field, formError, isBudgetRange, validate } from "@/lib/forms";
 import type { FormState } from "@/lib/forms";
 import { getPayloadClient } from "@/lib/payload";
 import { checkSubmission } from "@/lib/spam";
@@ -34,6 +34,7 @@ export async function submitInquiry(
     phone: field(data, "phone", 40),
     company: field(data, "company", 120),
     service: field(data, "service", 20),
+    budgetRange: field(data, "budgetRange", 20),
     timeline: field(data, "timeline", 120),
     message: field(data, "message", MESSAGE_MAX),
   };
@@ -75,6 +76,9 @@ export async function submitInquiry(
         phone: values.phone || undefined,
         company: values.company || undefined,
         service,
+        // Same rule as `service`: an unrecognised value is dropped, not
+        // rejected. It is optional, and nobody loses a message over it.
+        budgetRange: isBudgetRange(values.budgetRange) ? values.budgetRange : undefined,
         timeline: values.timeline || undefined,
         message: values.message,
         status: "new",
@@ -93,6 +97,7 @@ export async function submitInquiry(
           label: "Service",
           value: services.find((entry) => entry.id === service)?.title ?? "",
         },
+        { label: "Budget", value: budgetLabel(values.budgetRange) },
         { label: "Timeline", value: values.timeline },
       ],
       body: values.message,

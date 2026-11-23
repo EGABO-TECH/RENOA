@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isEditor } from "@/lib/access";
+import { logGlobal } from "@/lib/activity";
 import { revalidateEverything } from "@/lib/revalidate";
 
 export const Navigation: GlobalConfig = {
@@ -7,7 +8,7 @@ export const Navigation: GlobalConfig = {
   admin: { group: "Site" },
   versions: { max: 20 },
   access: { read: anyone, update: isEditor },
-  hooks: { afterChange: revalidateEverything },
+  hooks: { afterChange: [...revalidateEverything, ...logGlobal("Navigation")] },
   fields: [
     {
       name: "headerLinks",

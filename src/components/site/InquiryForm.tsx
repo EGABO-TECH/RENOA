@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { submitInquiry } from "@/app/(site)/contact/actions";
 import { FormMessage, FormTraps, useTurnstileReset } from "@/components/site/FormParts";
 import { Button, SelectField, Stack, TextAreaField, TextField } from "@/components/ui";
+import { BUDGET_RANGES } from "@/lib/forms";
 import type { FormState } from "@/lib/forms";
 
 /**
@@ -94,6 +95,16 @@ export function InquiryForm({
               options={services}
             />
           ) : null}
+
+          <SelectField
+            label="Budget range"
+            name="budgetRange"
+            defaultValue={values.budgetRange ?? ""}
+            error={errors.budgetRange}
+            placeholder="Rather not say"
+            options={BUDGET_RANGES.map((band) => ({ value: band.value, label: band.label }))}
+            hint="Optional. It helps us suggest the right engagement model."
+          />
 
           <TextField
             label="Timeline"

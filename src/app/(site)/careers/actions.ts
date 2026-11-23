@@ -79,13 +79,14 @@ export async function submitApplication(
     let cvFile: number | undefined;
 
     if (file) {
-      // Media creation is restricted to signed-in users, so this one call
-      // runs with access overridden — deliberately, and only after the type
-      // and size checks above. The upload itself is what the public is
-      // allowed to do here; the library is not otherwise open to them.
-      const media = await payload.create({
-        collection: "media",
-        data: { alt: `CV — ${values.name} (${job.title})` },
+      // Attachments is private — editors and admins read it, nobody creates
+      // through the API. This one call runs with access overridden,
+      // deliberately, and only after the spam, type and size checks above:
+      // posting a CV is what the public is allowed to do here, and nothing
+      // else about that collection is open to them.
+      const attachment = await payload.create({
+        collection: "attachments",
+        data: { label: `CV — ${values.name} (${job.title})` },
         file: {
           data: Buffer.from(await file.arrayBuffer()),
           mimetype: file.type,
@@ -94,7 +95,7 @@ export async function submitApplication(
         },
       });
 
-      cvFile = media.id;
+      cvFile = attachment.id;
     }
 
     const application = await payload.create({

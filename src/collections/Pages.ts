@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { seoGroup, slugField } from "@/lib/fields";
 import { pageBlocks } from "@/blocks";
 import { revalidateCollection, pagePaths } from "@/lib/revalidate";
@@ -14,7 +15,7 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "slug", "updatedAt"],
     description: "Backs /faq, /security, /privacy, /terms and any other standalone page.",
   },
-  hooks: revalidateCollection(pagePaths),
+  hooks: withActivityLog("Pages", revalidateCollection(pagePaths)),
   versions: { drafts: true, maxPerDoc: 25 },
   access: { read: publishedOrLoggedIn, create: isEditor, update: isEditor, delete: deleteOnlyAdmin },
   fields: [

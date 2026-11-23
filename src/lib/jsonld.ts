@@ -152,3 +152,35 @@ export const faqJsonLd = (
     })),
   };
 };
+
+/**
+ * BreadcrumbList, the structured-data half of `Breadcrumbs`.
+ *
+ * What it buys: Google renders the trail in place of the raw URL under a
+ * result, so `renoa.tech › Work › DriveUG` appears instead of a path. On a
+ * site where the deep pages are the ones that rank, that is the difference
+ * between a result that reads as part of a studio and one that reads as a
+ * loose page.
+ *
+ * The last crumb carries no `item`, which is what the spec asks for on the
+ * page you are already on.
+ */
+export const breadcrumbJsonLd = (
+  items: Array<{ label: string; href?: string }>,
+  settings: SiteSetting,
+): Json | null => {
+  if (items.length < 2) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) =>
+      compact({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+        item: item.href ? absoluteUrl(settings, item.href) : undefined,
+      }),
+    ),
+  };
+};

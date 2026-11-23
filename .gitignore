@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Local design proposals / scratch (not part of the build)
 .scratch/
+
+# Private uploads (CVs). Production uses Vercel Blob.
+/private-uploads/

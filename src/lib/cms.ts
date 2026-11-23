@@ -199,6 +199,58 @@ export const getProjects = async (filters: ProjectFilters = {}): Promise<Project
   return docs;
 };
 
+/**
+ * A page of results, for the two indexes that can grow without bound.
+ *
+ * `getProjects` and `getPosts` above return a capped list — 100 documents,
+ * unpaginated — which is the right shape for a homepage strip or a sitemap
+ * and the wrong one for an index a reader scrolls. The cap is a silent
+ * cliff: document 101 simply stops existing on the page, with nothing
+ * saying so. These functions are what `/work` and `/journal` use instead.
+ */
+export type Paged<T> = {
+  docs: T[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+};
+
+/** Clamps a `?page=` value to something a query can be built from. */
+export const asPageNumber = (value?: string): number => {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 1 ? page : 1;
+};
+
+export const PROJECTS_PER_PAGE = 12;
+export const POSTS_PER_PAGE = 12;
+
+export const getProjectsPage = async (
+  filters: ProjectFilters = {},
+  page = 1,
+  perPage = PROJECTS_PER_PAGE,
+): Promise<Paged<Project>> => {
+  const payload = await getPayloadClient();
+  const result = await payload.find({
+    collection: "projects",
+    where: {
+      ...(filters.category ? { category: { equals: filters.category } } : {}),
+      ...(filters.status ? { status: { equals: filters.status } } : {}),
+    },
+    sort: ["-launchDate", "-updatedAt"],
+    page,
+    limit: perPage,
+    depth: 1,
+    overrideAccess: false,
+  });
+
+  return {
+    docs: result.docs,
+    page: result.page ?? 1,
+    totalPages: result.totalPages,
+    totalDocs: result.totalDocs,
+  };
+};
+
 export const getProject = (slug: string) => findOneBySlug<Project>("projects", slug, 2);
 
 /**
@@ -281,6 +333,44 @@ export const getPosts = async (postType?: Post["postType"]): Promise<Post[]> => 
     pagination: false,
   });
   return docs;
+};
+
+/**
+ * A page of the journal.
+ *
+ * `excludeId` is how the featured post stays out of the grid without
+ * unbalancing it. The old code fetched everything and filtered the pinned
+ * post out in JavaScript, which with pagination would quietly make page one
+ * eleven items long and leave the last page an item short. Excluding it in
+ * the query keeps every page the same size and the count honest.
+ */
+export const getPostsPage = async (
+  postType?: Post["postType"],
+  page = 1,
+  excludeId?: number,
+  perPage = POSTS_PER_PAGE,
+): Promise<Paged<Post>> => {
+  const payload = await getPayloadClient();
+  const result = await payload.find({
+    collection: "posts",
+    where: {
+      workflowStatus: { equals: "published" },
+      ...(postType ? { postType: { equals: postType } } : {}),
+      ...(excludeId ? { id: { not_equals: excludeId } } : {}),
+    },
+    sort: ["-publishedAt", "-createdAt"],
+    page,
+    limit: perPage,
+    depth: 1,
+    overrideAccess: false,
+  });
+
+  return {
+    docs: result.docs,
+    page: result.page ?? 1,
+    totalPages: result.totalPages,
+    totalDocs: result.totalDocs,
+  };
 };
 
 export const getPost = (slug: string) => findOneBySlug<Post>("posts", slug, 2);

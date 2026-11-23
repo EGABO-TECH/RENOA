@@ -27,6 +27,7 @@ import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { ExportInquiries as ExportInquiries_3b9f995fc0f78db4574a4f5ab437d7a9 } from '@/components/admin/ExportInquiries'
 import { Icon as Icon_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { Logo as Logo_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { Dashboard as Dashboard_0e7b23c75ea046975e1784ba01f82886 } from '@/components/admin/Dashboard'
@@ -63,6 +64,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "@/components/admin/ExportInquiries#ExportInquiries": ExportInquiries_3b9f995fc0f78db4574a4f5ab437d7a9,
   "@/components/admin/Logo#Icon": Icon_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/Logo#Logo": Logo_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/Dashboard#Dashboard": Dashboard_0e7b23c75ea046975e1784ba01f82886,

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
 import { EmptyState, FAQList } from "@/components/site/Bits";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ProjectCard } from "@/components/site/ProjectCard";
 import { Button, Card, Grid, Section, SectionHeader, Stack } from "@/components/ui";
@@ -13,6 +15,7 @@ import {
   getSiteSettings,
   getSlugs,
 } from "@/lib/cms";
+import { breadcrumbJsonLd } from "@/lib/jsonld";
 import { populatedList } from "@/lib/media";
 import { buildMetadata, routes } from "@/lib/site";
 import type { Post, Project } from "@/payload-types";
@@ -54,9 +57,10 @@ export default async function ServicePage({ params }: Params) {
 
   const projects = populatedList<Project>(service.relatedProjects);
 
-  const [faqs, postsByProject] = await Promise.all([
+  const [faqs, postsByProject, settings] = await Promise.all([
     getFAQs(service.id),
     Promise.all(projects.map((project) => getPostsByProject(project.id))),
+    getSiteSettings(),
   ]);
 
   // One post can belong to several of these projects; show it once.
@@ -66,10 +70,21 @@ export default async function ServicePage({ params }: Params) {
 
   const deliverables = service.deliverables ?? [];
 
+  const crumbs = [
+    { label: "Home", href: routes.home },
+    { label: "Services", href: routes.services },
+    { label: service.title },
+  ];
+
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd(crumbs, settings)} />
+
       <Section size="lg">
-        <SectionHeader level="h1" title={service.title} lede={service.summary} />
+        <Stack gap={5}>
+          <Breadcrumbs items={crumbs} />
+          <SectionHeader level="h1" title={service.title} lede={service.summary} />
+        </Stack>
       </Section>
 
       {hasRichText(service.problem) ? (

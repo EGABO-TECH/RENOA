@@ -1,4 +1,12 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+// `MigrateUpArgs` and `MigrateDownArgs` are types and must be imported as
+// types. Payload's generator emits them in the same value import as `sql`,
+// and Node loads this file directly: its type stripping removes annotations
+// but cannot know that two of three names in a value import do not exist at
+// runtime, so the import fails with "does not provide an export named
+// 'MigrateDownArgs'" before a single statement runs. Split, every migration
+// command works again. Apply the same split to each new generated file.
+import { sql } from '@payloadcms/db-postgres'
+import type { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`

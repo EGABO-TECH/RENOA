@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { seoGroup, slugField } from "@/lib/fields";
 import { revalidateCollection, projectPaths } from "@/lib/revalidate";
 import { previewConfig } from "@/lib/preview";
@@ -13,7 +14,7 @@ export const Projects: CollectionConfig = {
     useAsTitle: "title",
     defaultColumns: ["title", "category", "status", "featured", "launchDate"],
   },
-  hooks: revalidateCollection(projectPaths),
+  hooks: withActivityLog("Projects", revalidateCollection(projectPaths)),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

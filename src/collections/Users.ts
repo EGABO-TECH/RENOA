@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { adminFieldOnly, isAdmin } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -26,7 +27,7 @@ export const Users: CollectionConfig = {
     },
     unlock: isAdmin,
   },
-  hooks: {
+  hooks: withActivityLog("Users", {
     beforeChange: [
       async ({ data, operation, req }) => {
         if (operation !== "create") return data;
@@ -48,7 +49,7 @@ export const Users: CollectionConfig = {
         return data;
       },
     ],
-  },
+  }),
   fields: [
     { name: "name", type: "text", required: true },
     {

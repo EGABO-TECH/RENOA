@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { JsonLd } from "@/components/site/JsonLd";
 import { PostCard } from "@/components/site/PostCard";
 import { ProjectCard } from "@/components/site/ProjectCard";
@@ -15,7 +16,7 @@ import {
   getSlugs,
   getTeamMember,
 } from "@/lib/cms";
-import { personJsonLd } from "@/lib/jsonld";
+import { breadcrumbJsonLd, personJsonLd } from "@/lib/jsonld";
 import { imageFrom } from "@/lib/media";
 import { FUNCTION_GROUP, buildMetadata, memberMailto, routes } from "@/lib/site";
 
@@ -70,11 +71,22 @@ export default async function MemberPage({ params }: Params) {
   const skills = member.skills ?? [];
   const repos = member.featuredRepos ?? [];
 
+  const crumbs = [
+    { label: "Home", href: routes.home },
+    { label: "Team", href: routes.team },
+    { label: member.fullName },
+  ];
+
   return (
     <>
       <JsonLd data={personJsonLd(member, settings)} />
+      <JsonLd data={breadcrumbJsonLd(crumbs, settings)} />
 
       <Section size="lg">
+        <div className="mb-[var(--s-5)]">
+          <Breadcrumbs items={crumbs} />
+        </div>
+
         <div className="grid grid-cols-1 gap-[var(--s-6)] md:grid-cols-[18rem_1fr] md:items-start">
           {photo ? (
             <Image

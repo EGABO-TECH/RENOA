@@ -1,6 +1,7 @@
 import type { CollectionConfig, SelectFieldSingleValidation } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { canUpdatePost, deleteOnlyAdmin, isLoggedIn, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { seoGroup, slugField } from "@/lib/fields";
 import { revalidateCollection, postPaths } from "@/lib/revalidate";
 import { previewConfig } from "@/lib/preview";
@@ -22,7 +23,7 @@ export const Posts: CollectionConfig = {
     update: canUpdatePost,
     delete: deleteOnlyAdmin,
   },
-  hooks: {
+  hooks: withActivityLog("Journal", {
     ...revalidateCollection(postPaths),
     beforeChange: [
       ({ data, req, originalDoc }) => {
@@ -42,7 +43,7 @@ export const Posts: CollectionConfig = {
         return next;
       },
     ],
-  },
+  }),
   fields: [
     { name: "title", type: "text", required: true },
     slugField(),

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { seoGroup, slugField } from "@/lib/fields";
 import { revalidateCollection, servicePaths } from "@/lib/revalidate";
 import { previewConfig } from "@/lib/preview";
@@ -13,7 +14,7 @@ export const Services: CollectionConfig = {
     useAsTitle: "title",
     defaultColumns: ["title", "displayOrder"],
   },
-  hooks: revalidateCollection(servicePaths),
+  hooks: withActivityLog("Services", revalidateCollection(servicePaths)),
   versions: { drafts: true, maxPerDoc: 25 },
   access: {
     read: publishedOrLoggedIn,

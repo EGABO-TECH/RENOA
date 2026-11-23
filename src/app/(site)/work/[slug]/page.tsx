@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { RichText, hasRichText } from "@/components/RichText";
 import { ResultList, TestimonialCard } from "@/components/site/Bits";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { JsonLd } from "@/components/site/JsonLd";
 import { MemberCard } from "@/components/site/MemberCard";
 import { PostCard } from "@/components/site/PostCard";
@@ -15,7 +16,7 @@ import {
   getSlugs,
   getTestimonials,
 } from "@/lib/cms";
-import { projectJsonLd } from "@/lib/jsonld";
+import { breadcrumbJsonLd, projectJsonLd } from "@/lib/jsonld";
 import { imageFrom, populatedList } from "@/lib/media";
 import {
   PROJECT_CATEGORY,
@@ -77,12 +78,21 @@ export default async function ProjectPage({ params }: Params) {
   const launched = formatDate(project.launchDate);
   const stack = project.techStack ?? [];
 
+  const crumbs = [
+    { label: "Home", href: routes.home },
+    { label: "Work", href: routes.work },
+    { label: project.title },
+  ];
+
   return (
     <>
       <JsonLd data={projectJsonLd(project, settings)} />
+      <JsonLd data={breadcrumbJsonLd(crumbs, settings)} />
 
       <Section size="lg">
         <Stack gap={5}>
+          <Breadcrumbs items={crumbs} />
+
           <Stack row gap={2} align="center">
             <Badge
               tone={project.status === "live" ? "ok" : "neutral"}

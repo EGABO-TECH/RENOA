@@ -1,13 +1,14 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { deleteOnlyAdmin, isEditor, publishedOrLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 import { revalidateCollection, faqPaths } from "@/lib/revalidate";
 
 export const FAQs: CollectionConfig = {
   slug: "faqs",
   labels: { singular: "FAQ", plural: "FAQs" },
   admin: { group: "Content", useAsTitle: "question", defaultColumns: ["question", "category", "displayOrder"] },
-  hooks: revalidateCollection(faqPaths),
+  hooks: withActivityLog("FAQs", revalidateCollection(faqPaths)),
   versions: { drafts: true, maxPerDoc: 10 },
   access: { read: publishedOrLoggedIn, create: isEditor, update: isEditor, delete: deleteOnlyAdmin },
   defaultSort: "displayOrder",

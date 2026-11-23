@@ -2,10 +2,12 @@ import path from "path";
 
 import type { CollectionConfig } from "payload";
 import { anyone, deleteOnlyAdmin, isEditor, isLoggedIn } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 
 export const Media: CollectionConfig = {
   slug: "media",
   admin: { group: "Assets", useAsTitle: "alt" },
+  hooks: withActivityLog("Media"),
   access: {
     read: anyone,
     create: isLoggedIn,

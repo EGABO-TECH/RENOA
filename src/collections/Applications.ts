@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { anyone, deleteOnlyAdmin, pipelineRead, pipelineUpdate } from "@/lib/access";
+import { withActivityLog } from "@/lib/activity";
 
 export const Applications: CollectionConfig = {
   slug: "applications",
@@ -9,6 +10,7 @@ export const Applications: CollectionConfig = {
     defaultColumns: ["name", "job", "email", "stage", "createdAt"],
     description: "Job applications. Contains personal data — members have no access.",
   },
+  hooks: withActivityLog("Applications"),
   access: {
     create: anyone,
     read: pipelineRead,
@@ -23,8 +25,10 @@ export const Applications: CollectionConfig = {
     {
       name: "cvFile",
       type: "upload",
-      relationTo: "media",
-      admin: { description: "CV or portfolio, PDF preferred." },
+      // Attachments, not Media: a CV is personal data and the Media library
+      // is world-readable so that images can be served. See Attachments.
+      relationTo: "attachments",
+      admin: { description: "CV or portfolio, PDF. Stored privately." },
     },
     { name: "message", type: "textarea" },
     {
